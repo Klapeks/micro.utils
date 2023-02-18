@@ -78,13 +78,15 @@ var MicroServer = (function () {
             });
         });
     };
-    MicroServer.prototype.start = function () {
+    MicroServer.prototype.start = function (onStart) {
         var _this = this;
         this.app.emit("event:after_init");
         var server = this.app.listen(this.port, function () {
             if (!_this.port)
                 console.log("No default port was founded. Using random...");
             console.log("Server starter at port: " + server.address().port);
+            if (onStart)
+                onStart();
         });
         return server;
     };
