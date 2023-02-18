@@ -13,7 +13,8 @@ const {
     utils,
     AuthTokens,
     api,
-    validMicroServer
+    validMicroServer,
+    parseDatabasePath
 } = micro_utils;
 
 export {
@@ -29,5 +30,6 @@ export {
     utils,
     AuthTokens,
     api,
-    validMicroServer
+    validMicroServer,
+    parseDatabasePath
 }

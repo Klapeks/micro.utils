@@ -1,6 +1,7 @@
 import afterInit from "./after.init";
 import { api, validMicroServer } from "./api";
 import AuthTokens from "./auth.tokens";
+import parseDatabasePath from "./data/dbpath.parser";
 import cookieParser from "./express/cookie.parser";
 import { HttpException, HttpStatus, NotAuthException } from "./express/exceptions";
 import express from "./express/express";
@@ -22,5 +23,6 @@ export default {
     utils,
     AuthTokens,
     api,
-    validMicroServer
+    validMicroServer,
+    parseDatabasePath
 }
