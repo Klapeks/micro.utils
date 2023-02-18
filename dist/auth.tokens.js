@@ -39,10 +39,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var axios_1 = __importDefault(require("axios"));
 var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-var api_1 = require("./api");
 var exceptions_1 = require("./express-utils/exceptions");
-var tokens_1 = __importDefault(require("./tokens"));
+var global_env_1 = __importDefault(require("./global.env"));
 var utils_1 = __importDefault(require("./utils"));
 function co(tokenExpire) {
     return {
@@ -67,7 +67,7 @@ var AuthTokens = {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4, api_1.api.post("/auth/tokens/refresh", {
+                        return [4, axios_1.default.post(global_env_1.default.servers.auth_refresh, {
                                 refresh_token: AuthTokens.reqRefreshToken(req)
                             })];
                     case 2:
@@ -83,8 +83,8 @@ var AuthTokens = {
         });
     },
     setResponseTokens: function (res, tokens) {
-        res.cookie("s_refresh_token", tokens.refresh_token, co(tokens_1.default.expire.refresh));
-        res.cookie("s_auth_token", tokens.auth_token, co(tokens_1.default.expire.auth));
+        res.cookie("s_refresh_token", tokens.refresh_token, co(global_env_1.default.tokens.expire.refresh));
+        res.cookie("s_auth_token", tokens.auth_token, co(global_env_1.default.tokens.expire.auth));
     },
     genTokens: function (user) {
         return {
@@ -101,19 +101,19 @@ var AuthTokens = {
         return ((_a = req.cookies) === null || _a === void 0 ? void 0 : _a.s_refresh_token) || ((_b = req.body) === null || _b === void 0 ? void 0 : _b.refresh_token);
     },
     genAuthToken: function (user) {
-        return jsonwebtoken_1.default.sign(user, tokens_1.default.auth, {
-            expiresIn: tokens_1.default.expire.auth
+        return jsonwebtoken_1.default.sign(user, global_env_1.default.tokens.auth, {
+            expiresIn: global_env_1.default.tokens.expire.auth
         });
     },
     genRefreshToken: function (userId) {
-        return jsonwebtoken_1.default.sign({ userId: userId }, tokens_1.default.refresh, {
-            expiresIn: tokens_1.default.expire.refresh
+        return jsonwebtoken_1.default.sign({ userId: userId }, global_env_1.default.tokens.refresh, {
+            expiresIn: global_env_1.default.tokens.expire.refresh
         });
     },
     verifyRefresh: function (refresh_token) {
         if (refresh_token)
             try {
-                var user = jsonwebtoken_1.default.verify(refresh_token, tokens_1.default.refresh);
+                var user = jsonwebtoken_1.default.verify(refresh_token, global_env_1.default.tokens.refresh);
                 user = +user.userId || +user;
                 if (user)
                     return user;
@@ -124,7 +124,7 @@ var AuthTokens = {
     verifyAuth: function (auth_token) {
         if (auth_token)
             try {
-                var user = jsonwebtoken_1.default.verify(auth_token, tokens_1.default.auth);
+                var user = jsonwebtoken_1.default.verify(auth_token, global_env_1.default.tokens.auth);
                 if (AuthTokens.isSelfUser(user))
                     return user;
             }

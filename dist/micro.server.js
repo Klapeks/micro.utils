@@ -38,45 +38,69 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
+var axios_1 = __importDefault(require("axios"));
 var express_1 = __importDefault(require("express"));
-var process_1 = require("process");
-var after_init_1 = __importDefault(require("./after.init"));
-var cookie_parser_1 = __importDefault(require("./cookie.parser"));
-var register_routes_1 = __importDefault(require("./register.routes"));
-var app = (0, express_1.default)();
-app.use(express_1.default.json());
-app.use(cookie_parser_1.default);
-var showErrors = ((_b = ((_a = process_1.env.SHOW_DATABASE_ERRORS_IN_FRONEND) === null || _a === void 0 ? void 0 : _a.toString())) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === "true";
-app.on("event:after_init", (0, after_init_1.default)(app, showErrors));
-process.on('uncaughtException', function (err) {
-    console.error("Uncaught Exception: ".concat(typeof err, ": ").concat(err.message));
-    console.log(err);
-});
-var expressApp = {
-    app: app,
-    SERVER_ID: '',
-    start: function (options) {
-        return __awaiter(this, void 0, void 0, function () {
-            var server;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        expressApp.SERVER_ID = options.id;
-                        return [4, (0, register_routes_1.default)(app, options.prefix, options.routes)];
-                    case 1:
-                        _a.sent();
-                        app.emit("event:after_init");
-                        server = app.listen(options.port, function () {
-                            if (!options.port)
-                                console.log("No default port at .env was founded. Using random...");
-                            console.log("Server starter at port: " + server.address().port);
-                        });
-                        return [2, server];
-                }
-            });
+var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+var after_init_1 = __importDefault(require("./express-utils/after.init"));
+var cookie_parser_1 = __importDefault(require("./express-utils/cookie.parser"));
+var exceptions_1 = require("./express-utils/exceptions");
+var register_routes_1 = __importDefault(require("./express-utils/register.routes"));
+var global_env_1 = __importDefault(require("./global.env"));
+var MicroServer = (function () {
+    function MicroServer(options) {
+        var _a, _b;
+        this.id = options.id;
+        this.port = options.port;
+        this.app = (0, express_1.default)();
+        this.app.use(express_1.default.json());
+        this.app.use(cookie_parser_1.default);
+        var showErrors = ((_b = ((_a = process.env.SHOW_DATABASE_ERRORS_IN_FRONEND) === null || _a === void 0 ? void 0 : _a.toString())) === null || _b === void 0 ? void 0 : _b.toLowerCase()) === "true";
+        this.app.on("event:after_init", (0, after_init_1.default)(this.app, showErrors));
+        var path = global_env_1.default.servers.ip;
+        if (!path)
+            throw "NO GLOBAL SERVER IP";
+        if (!path.endsWith('/'))
+            path += '/';
+        path += 'api';
+        this.api = axios_1.default.create({
+            baseURL: path,
+            timeout: 5000,
+            headers: {
+                'micro-server': jsonwebtoken_1.default.sign({ server: process.env.MICRO_SERVER_ID }, global_env_1.default.tokens.server, { expiresIn: '10d' })
+            }
         });
     }
-};
-exports.default = expressApp;
+    MicroServer.prototype.registerRoutes = function (prefix, routes) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2, (0, register_routes_1.default)(this.app, prefix, routes)];
+            });
+        });
+    };
+    MicroServer.prototype.start = function () {
+        var _this = this;
+        this.app.emit("event:after_init");
+        var server = this.app.listen(this.port, function () {
+            if (!_this.port)
+                console.log("No default port was founded. Using random...");
+            console.log("Server starter at port: " + server.address().port);
+        });
+        return server;
+    };
+    MicroServer.validMicroServer = function (header) {
+        if (typeof header !== "string")
+            header = header['micro-server'];
+        try {
+            return jsonwebtoken_1.default.verify(header, global_env_1.default.tokens.server);
+        }
+        catch (e) {
+            throw new exceptions_1.HttpException("NOT_A_MICRO_SERVER", exceptions_1.HttpStatus.METHOD_NOT_ALLOWED);
+        }
+    };
+    return MicroServer;
+}());
+exports.default = MicroServer;
+process.on('uncaughtException', function (err) {
+    console.error("Uncaught Exception:", err, 'error type: ' + typeof err);
+});

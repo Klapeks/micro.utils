@@ -1,8 +1,8 @@
+import axios from 'axios';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { api } from './api';
 import { HttpException, HttpStatus } from './express-utils/exceptions';
-import tokens_env from './tokens';
+import globalEnv from './global.env';
 import utils from './utils';
 
 export interface SelfUser {
@@ -25,7 +25,7 @@ const AuthTokens = {
             throw new HttpException("Auth token expired", HttpStatus.UNAUTHORIZED);
         }
         try {
-            const newTokens = (await api.post("/auth/tokens/refresh", {
+            const newTokens = (await axios.post(globalEnv.servers.auth_refresh, {
                 refresh_token: AuthTokens.reqRefreshToken(req)
             })).data;
             AuthTokens.setResponseTokens(res, newTokens);
@@ -37,8 +37,8 @@ const AuthTokens = {
     setResponseTokens(res: Response, tokens: {
         refresh_token: string, auth_token: string
     }) {
-        res.cookie("s_refresh_token", tokens.refresh_token, co(tokens_env.expire.refresh));
-        res.cookie("s_auth_token", tokens.auth_token, co(tokens_env.expire.auth));
+        res.cookie("s_refresh_token", tokens.refresh_token, co(globalEnv.tokens.expire.refresh));
+        res.cookie("s_auth_token", tokens.auth_token, co(globalEnv.tokens.expire.auth));
     },
     genTokens(user: SelfUser) {
         return {
@@ -53,18 +53,18 @@ const AuthTokens = {
         return req.cookies?.s_refresh_token || req.body?.refresh_token;
     },
     genAuthToken(user: SelfUser): string {
-        return jwt.sign(user, tokens_env.auth, {
-            expiresIn: tokens_env.expire.auth
+        return jwt.sign(user, globalEnv.tokens.auth, {
+            expiresIn: globalEnv.tokens.expire.auth
         });
     },
     genRefreshToken(userId: number): string {
-        return jwt.sign({userId}, tokens_env.refresh, {
-            expiresIn: tokens_env.expire.refresh
+        return jwt.sign({userId}, globalEnv.tokens.refresh, {
+            expiresIn: globalEnv.tokens.expire.refresh
         });
     },
     verifyRefresh(refresh_token: string): number {
         if (refresh_token) try {
-            let user = jwt.verify(refresh_token, tokens_env.refresh) as any;
+            let user = jwt.verify(refresh_token, globalEnv.tokens.refresh) as any;
             user = +(user as any).userId || +user;
             if (user) return user;
         } catch (e) {}
@@ -72,7 +72,7 @@ const AuthTokens = {
     },
     verifyAuth(auth_token: string): SelfUser {
         if (auth_token) try {
-            const user = jwt.verify(auth_token, tokens_env.auth);
+            const user = jwt.verify(auth_token, globalEnv.tokens.auth);
             if (AuthTokens.isSelfUser(user)) return user;
         } catch (e) {}
         throw "Invalid token";
