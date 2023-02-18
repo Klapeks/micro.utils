@@ -54,7 +54,7 @@ process.on('uncaughtException', function (err) {
     console.error("Uncaught Exception: ".concat(typeof err, ": ").concat(err.message));
     console.log(err);
 });
-exports.default = {
+var expressApp = {
     app: app,
     SERVER_ID: '',
     start: function (options) {
@@ -63,7 +63,7 @@ exports.default = {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.SERVER_ID = options.id;
+                        expressApp.SERVER_ID = options.id;
                         return [4, (0, register_routes_1.default)(app, options.prefix, options.routes)];
                     case 1:
                         _a.sent();
@@ -79,3 +79,4 @@ exports.default = {
         });
     }
 };
+exports.default = expressApp;

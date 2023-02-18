@@ -1,5 +1,5 @@
 /// <reference types="node" />
-declare const _default: {
+declare const expressApp: {
     app: import("express-serve-static-core").Express;
     SERVER_ID: string;
     start(options: {
@@ -11,4 +11,4 @@ declare const _default: {
         };
     }): Promise<import("http").Server<typeof import("http").IncomingMessage, typeof import("http").ServerResponse>>;
 };
-export default _default;
+export default expressApp;

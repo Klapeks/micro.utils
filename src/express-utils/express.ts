@@ -17,7 +17,7 @@ process.on('uncaughtException', err => {
     console.log(err);
 });
 
-export default {
+const expressApp = {
     app,
     SERVER_ID: '',
     async start(options: {
@@ -26,7 +26,7 @@ export default {
         prefix?: string,
         routes: { [path: string]: any }
     }) {
-        this.SERVER_ID = options.id;
+        expressApp.SERVER_ID = options.id;
         await registerRoutes(app, options.prefix, options.routes);
         app.emit("event:after_init");
         const server = app.listen(options.port, () => {
@@ -36,3 +36,5 @@ export default {
         return server;
     }
 };
+
+export default expressApp;

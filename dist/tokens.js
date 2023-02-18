@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var path_1 = __importDefault(require("path"));
 require('dotenv').config({
-    path: path_1.default.join(__dirname, '../global.env')
+    path: path_1.default.join(__dirname, '../../../../global.env')
 });
 exports.default = {
     auth: process.env.AUTH_TOKEN,
