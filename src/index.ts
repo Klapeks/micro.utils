@@ -11,8 +11,7 @@ import tokens from "./tokens";
 import utils from "./utils";
 
 export type SelfUser = ISelfUser;
-
-export default {
+export {
     MRouter,
     afterInit,
     cookieParser,
