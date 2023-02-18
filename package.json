@@ -10,6 +10,10 @@
     "microservice",
     "microservices"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Klapeks/micro.utils.git"
+  },
   "devDependencies": {
     "@types/express": "^4.17.13",
     "@types/jsonwebtoken": "^8.5.9",
