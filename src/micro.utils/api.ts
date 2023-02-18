@@ -1,7 +1,7 @@
 import axios from "axios";
 import jwt from 'jsonwebtoken';
-import { HttpException, HttpStatus } from "./express2/exceptions";
-import express from "./express2/express2";
+import { HttpException, HttpStatus } from "./express-utils/exceptions";
+import express from "./express-utils/express";
 import tokens from "./tokens";
 
 if (!express.SERVER_ID) throw "No express.SERVER_ID";
