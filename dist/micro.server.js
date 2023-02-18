@@ -78,16 +78,26 @@ var MicroServer = (function () {
             });
         });
     };
-    MicroServer.prototype.start = function (onStart) {
+    MicroServer.prototype.start = function (beforeStart) {
         var _this = this;
         this.app.emit("event:after_init");
-        var server = this.app.listen(this.port, function () {
-            if (!_this.port)
-                console.log("No default port was founded. Using random...");
-            console.log("Server starter at port: " + server.address().port);
-            if (onStart)
-                onStart();
-        });
+        var server = this.app.listen(this.port, function () { return __awaiter(_this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!beforeStart) return [3, 2];
+                        return [4, beforeStart()];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        if (!this.port)
+                            console.log("No default port was founded. Using random...");
+                        console.log("Server starter at port: " + server.address().port);
+                        return [2];
+                }
+            });
+        }); });
         return server;
     };
     MicroServer.validMicroServer = function (header) {

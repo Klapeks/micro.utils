@@ -3,9 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.globalEnv = exports.MicroServer = exports.AuthTokens = exports.NotAuthException = exports.HttpException = exports.HttpStatus = exports.MRouter = void 0;
+exports.parseDatabasePath = exports.globalEnv = exports.MicroServer = exports.AuthTokens = exports.NotAuthException = exports.HttpException = exports.HttpStatus = exports.MRouter = void 0;
 var auth_tokens_1 = __importDefault(require("./dist/auth.tokens"));
 exports.AuthTokens = auth_tokens_1.default;
+var dbpath_parser_1 = __importDefault(require("./dist/data/dbpath.parser"));
+exports.parseDatabasePath = dbpath_parser_1.default;
 var exceptions_1 = require("./dist/express-utils/exceptions");
 Object.defineProperty(exports, "HttpException", { enumerable: true, get: function () { return exceptions_1.HttpException; } });
 Object.defineProperty(exports, "HttpStatus", { enumerable: true, get: function () { return exceptions_1.HttpStatus; } });

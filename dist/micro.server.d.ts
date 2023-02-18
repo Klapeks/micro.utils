@@ -14,7 +14,7 @@ export default class MicroServer {
     registerRoutes(prefix: string, routes: {
         [path: string]: any;
     }): Promise<void>;
-    start(onStart?: () => void): import("http").Server<typeof import("http").IncomingMessage, typeof import("http").ServerResponse>;
+    start(beforeStart?: () => void | Promise<void>): import("http").Server<typeof import("http").IncomingMessage, typeof import("http").ServerResponse>;
     static validMicroServer(header: any): object;
 }
 export {};

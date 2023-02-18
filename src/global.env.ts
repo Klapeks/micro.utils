@@ -4,8 +4,6 @@ require('dotenv').config({
     path: path.join(__dirname, '../../../../global.env')
 })
 
-
-
 export default {
     tokens: {
         auth: process.env.AUTH_TOKEN as string,

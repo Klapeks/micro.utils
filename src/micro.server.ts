@@ -51,12 +51,12 @@ export default class MicroServer {
         return registerRoutes(this.app, prefix, routes); 
     }
 
-    start(onStart?: () => void) {
+    start(beforeStart?: () => void | Promise<void>) {
         this.app.emit("event:after_init");
-        const server = this.app.listen(this.port, () => {
+        const server = this.app.listen(this.port, async () => {
+            if (beforeStart) await beforeStart();
             if (!this.port) console.log("No default port was founded. Using random...");
             console.log("Server starter at port: " + (server.address() as AddressInfo).port);
-            if (onStart) onStart();
         })
         return server;
     }
