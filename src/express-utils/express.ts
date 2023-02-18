@@ -1,7 +1,7 @@
 import express, { Request, Router } from "express"
 import { AddressInfo } from "net";
 import { env } from "process";
-import afterInit from "../after.init";
+import afterInit from "./after.init";
 import cookieParser from "./cookie.parser";
 import registerRoutes from "./register.routes";
 
