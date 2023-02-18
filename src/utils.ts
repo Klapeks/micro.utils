@@ -10,5 +10,10 @@ export default {
     mstime(time: string | number): number {
         if (typeof time === "number") return time;
         return mstime(time)
+    },
+    async delay(ms: number){
+        return new Promise<void>(resolve => {
+            setTimeout(resolve, ms);
+        })
     }
 }

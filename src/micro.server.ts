@@ -7,6 +7,7 @@ import cookieParser from "./express-utils/cookie.parser";
 import { HttpException, HttpStatus } from "./express-utils/exceptions";
 import registerRoutes from "./express-utils/register.routes";
 import globalEnv from "./global.env";
+import utils from "./utils";
 
 interface ServerOptions {
     id: string,
@@ -18,6 +19,9 @@ export default class MicroServer {
     readonly port: number;
     readonly app: Express;
     readonly api: AxiosInstance;
+
+    private _loadingRoutes = 0;
+    private _started = false;
 
     constructor(options: ServerOptions) {
         this.id = options.id;
@@ -48,10 +52,18 @@ export default class MicroServer {
     }
 
     async registerRoutes(prefix: string, routes: { [path: string]: any }) {
-        return registerRoutes(this.app, prefix, routes); 
+        if (this.isStarted) throw "Can't load routes when server started";
+        this._loadingRoutes += 1;
+        await registerRoutes(this.app, prefix, routes);
+        this._loadingRoutes -= 1;
     }
 
-    start(beforeStart?: () => void | Promise<void>) {
+    async start(beforeStart?: () => void | Promise<void>) {
+        await utils.delay(100);
+        while (this._loadingRoutes) {
+            await utils.delay(100);
+        }
+        this._started = true;
         this.app.emit("event:after_init");
         const server = this.app.listen(this.port, async () => {
             if (beforeStart) await beforeStart();
@@ -59,6 +71,10 @@ export default class MicroServer {
             console.log("Server starter at port: " + (server.address() as AddressInfo).port);
         })
         return server;
+    }
+
+    get isStarted() {
+        return this._started;
     }
 
     static validMicroServer(header: any) {
