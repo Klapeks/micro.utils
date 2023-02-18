@@ -12,5 +12,6 @@ declare const _default: {
         ip: string;
         auth_refresh: string;
     };
+    isDebug: boolean;
 };
 export default _default;

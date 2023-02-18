@@ -20,5 +20,6 @@ exports.default = {
     servers: {
         ip: process.env.GLOBAL_SERVER,
         auth_refresh: process.env.AUTH_REFRESH_URL
-    }
+    },
+    isDebug: process.env.DEBUG == 'true'
 };

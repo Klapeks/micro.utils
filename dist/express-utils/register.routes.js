@@ -39,6 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var global_env_1 = __importDefault(require("../global.env"));
 var mrouter_1 = __importDefault(require("./mrouter"));
 function toRouter(router) {
     return __awaiter(this, void 0, void 0, function () {
@@ -69,6 +70,8 @@ function registerRoutes(app, prefix, routers) {
                 case 1:
                     if (!(_i < _a.length)) return [3, 11];
                     path = _a[_i];
+                    if (global_env_1.default.isDebug)
+                        console.log('loading routes...', prefix, path);
                     router = routers[path];
                     _k.label = 2;
                 case 2:
@@ -87,7 +90,10 @@ function registerRoutes(app, prefix, routers) {
                 case 5:
                     _e.apply(_d, _f.concat([_k.sent()]));
                     _k.label = 6;
-                case 6: return [2];
+                case 6:
+                    if (global_env_1.default.isDebug)
+                        console.log('router was loaded', prefix, path);
+                    return [2];
                 case 7:
                     np = path;
                     if (!np.startsWith("/"))
@@ -99,6 +105,8 @@ function registerRoutes(app, prefix, routers) {
                     return [4, toRouter(router)];
                 case 8:
                     _h.apply(_g, _j.concat([_k.sent()]));
+                    if (global_env_1.default.isDebug)
+                        console.log('router was loaded', np);
                     return [3, 10];
                 case 9:
                     e_1 = _k.sent();

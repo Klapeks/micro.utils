@@ -1,4 +1,5 @@
 import { IRoute, IRouter, Router } from "express";
+import globalEnv from "../global.env";
 import MRouter from "./mrouter";
 
 type R = Router | MRouter | Promise<any>;
@@ -11,11 +12,13 @@ async function toRouter(router: R): Promise<Router> {
 
 export default async function registerRoutes(app: IRouter, prefix: string | undefined, routers: {[path: string]: R}) {
     for (let path of Object.keys(routers)) {
+        if (globalEnv.isDebug) console.log('loading routes...', prefix, path);
         const router = routers[path];
         try {
             if (!path) {
                 if (!prefix) app.use(await toRouter(router));
                 else app.use(prefix, await toRouter(router));
+                if (globalEnv.isDebug) console.log('router was loaded', prefix, path)
                 return;
             }
             let np = path;
@@ -23,6 +26,7 @@ export default async function registerRoutes(app: IRouter, prefix: string | unde
             if (prefix) np = prefix + np;
             // console.log(np);
             app.use(np, await toRouter(router));
+            if (globalEnv.isDebug) console.log('router was loaded', np);
         } catch (e) {
             console.error(e);
             console.error("Failed to register router" + (path ? ' '+path : '') + ".");
