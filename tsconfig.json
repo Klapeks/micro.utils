@@ -1,14 +1,16 @@
 {
     "compilerOptions": {
         "target": "es5",
-        "module": "CommonJS",
+        "module": "System",
+        "moduleResolution": "node",
         "declaration": true,
         "noImplicitAny": true,
         "esModuleInterop": true,
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": false,
-        "outDir": "dist"
+        // "outDir": "dist"
+        "outFile": "index.js"
     },
     "include": ["src/**/*"],
     "exclude": ["node_modules", "**/*.spec.ts"]

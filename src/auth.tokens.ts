@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { api } from './api';
-import { HttpException, HttpStatus } from './express/exceptions';
+import { HttpException, HttpStatus } from './express2/exceptions';
 import tokens_env from './tokens';
 import utils from './utils';
 
