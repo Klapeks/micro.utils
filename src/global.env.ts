@@ -1,22 +1,34 @@
-import path from "path"
+import pathMod from "path"
 
-require('dotenv').config({
-    path: path.join(__dirname, '../../../../global.env')
-})
+const globalEnv = {
+    parseEnv(absolutePath: string) {
+        if (!absolutePath.endsWith('global.env')) {
+            absolutePath = pathMod.join(absolutePath, 'global.env');
+        }
+        require('dotenv').config({ path: absolutePath });
 
-export default {
-    tokens: {
-        auth: process.env.AUTH_TOKEN as string,
-        refresh: process.env.REFRESH_TOKEN as string,
-        server: process.env.GLOBAL_TOKEN as string,
-        expire: {
-            auth: process.env.AUTH_EXPIRE as string,
-            refresh: process.env.REFRESH_EXPIRE as string,
+        globalEnv.isDebug = process.env.DEBUG == 'true';
+
+        globalEnv.servers = {
+            ip: process.env.GLOBAL_SERVER,
+            auth_refresh: process.env.AUTH_REFRESH_URL
+        }
+        globalEnv.tokens = {
+            auth: process.env.AUTH_TOKEN,
+            refresh: process.env.REFRESH_TOKEN,
+            server: process.env.GLOBAL_TOKEN,
+            expire: {
+                auth: process.env.AUTH_EXPIRE,
+                refresh: process.env.REFRESH_EXPIRE,
+            }
         }
     },
-    servers: {
-        ip: process.env.GLOBAL_SERVER as string,
-        auth_refresh: process.env.AUTH_REFRESH_URL as string
+    tokens: {
+        auth: '',  refresh: '',  server: '',
+        expire: { auth: '',  refresh: '' }
     },
-    isDebug: process.env.DEBUG == 'true'
+    servers: { ip: '',  auth_refresh: '' },
+    isDebug: false
 }
+
+export default globalEnv;

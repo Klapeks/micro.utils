@@ -11,7 +11,9 @@ import utils from "./utils";
 
 interface ServerOptions {
     id: string,
-    port: number
+    port: number,
+    /** Absolute path to global.env */
+    env: string
 }
 
 export default class MicroServer {
@@ -26,6 +28,7 @@ export default class MicroServer {
     constructor(options: ServerOptions) {
         this.id = options.id;
         this.port = options.port;
+        globalEnv.parseEnv(options.env);
 
         this.app = express()
         this.app.use(express.json())
