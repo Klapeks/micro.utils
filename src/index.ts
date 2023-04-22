@@ -4,6 +4,7 @@ import { HttpException, HttpStatus, NotAuthException } from "./express-utils/exc
 import MRouter from "./express-utils/mrouter";
 import globalEnv from "./global.env";
 import MicroServer from "./micro.server";
+import utils, { bits } from './utils';
 
 export type SelfUser = ISelfUser;
 export {
@@ -14,5 +15,6 @@ export {
     AuthTokens,
     MicroServer,
     globalEnv,
-    parseDatabasePath
+    parseDatabasePath,
+    utils, bits
 }

@@ -57,14 +57,22 @@ export default class MicroServer {
     async registerRoutes(prefix: string, routes: { [path: string]: any }) {
         if (this.isStarted) throw "Can't load routes when server started";
         this._loadingRoutes += 1;
-        await registerRoutes(this.app, prefix, routes);
+        try {
+            await registerRoutes(this.app, prefix, routes);
+        } catch (e) {
+            this._loadingRoutes = -1;
+            throw e;
+        }
         this._loadingRoutes -= 1;
     }
 
     async start(beforeStart?: () => void | Promise<void>) {
-        await utils.delay(100);
+        await utils.delay(200);
         while (this._loadingRoutes) {
-            await utils.delay(100);
+            if (this._loadingRoutes < 0) {
+                throw "Failed register routers. Micro server will not be started";
+            }
+            await utils.delay(200);
         }
         this._started = true;
         this.app.emit("event:after_init");

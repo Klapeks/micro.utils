@@ -1,6 +1,6 @@
 import { AxiosError } from "axios";
 import { Request, Response, Router } from "express";
-import { HttpException, HttpStatus } from "./exceptions";
+import { HttpException, HttpStatus, catchRouterError } from "./exceptions";
 
 interface CallbackType {
     req: Request;
@@ -44,42 +44,7 @@ export default class MRouter {
                 }
                 res.status(200).send(a);
             } catch (e) {
-                if (e instanceof HttpException) {
-                    return res.status(e.status).send({
-                        error: e.message, status: e.status
-                    });
-                }
-                if (e instanceof AxiosError) {
-                    res.status(e.status || 400).send(e.response?.data || {
-                        error: "AxiosError", status: 400
-                    });
-                    return;
-                }
-                let code = 0;
-                if (Array.isArray(e) && e.length==2) {
-                    if (+e[0]) {
-                        code = +e[0];
-                        e = e[1];
-                    } else if (+e[1]) {
-                        code = +e[1];
-                        e = e[0];
-                    } else {
-                        e = e[0] +' '+ e[1];
-                    }
-                }
-                if (!code && typeof e === "string") {
-                    if (e.includes("found")) {
-                        code = HttpStatus.NOT_FOUND;
-                    } else code = HttpStatus.BAD_REQUEST
-                }
-                if (!code) {
-                    e = "Internal Server Error"
-                    code = HttpStatus.INTERNAL_SERVER_ERROR;
-                }
-                res.status(code).send({
-                    error: e, 
-                    status: code
-                });
+                catchRouterError(e, res);
             }
         }
     }

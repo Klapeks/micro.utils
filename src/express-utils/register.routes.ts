@@ -11,6 +11,7 @@ async function toRouter(router: R): Promise<Router> {
 }
 
 export default async function registerRoutes(app: IRouter, prefix: string | undefined, routers: {[path: string]: R}) {
+    let isRouterError = 0;
     for (let path of Object.keys(routers)) {
         if (globalEnv.isDebug) console.log('loading routes...', prefix, path);
         const router = routers[path];
@@ -30,6 +31,8 @@ export default async function registerRoutes(app: IRouter, prefix: string | unde
         } catch (e) {
             console.error(e);
             console.error("Failed to register router" + (path ? ' '+path : '') + ".");
+            isRouterError += 1;
         }
     }
+    if (isRouterError) throw `Can't register ${isRouterError} routers`;
 }

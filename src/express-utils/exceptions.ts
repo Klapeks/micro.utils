@@ -1,3 +1,5 @@
+import { AxiosError } from "axios";
+import { Response } from "express";
 
 export class HttpException extends Error {
     readonly status: number;
@@ -63,4 +65,44 @@ export enum HttpStatus {
     SERVICE_UNAVAILABLE = 503,
     GATEWAY_TIMEOUT = 504,
     HTTP_VERSION_NOT_SUPPORTED = 505
+}
+
+export function catchRouterError(e: any, res: Response) {
+    if (e instanceof HttpException) {
+        return res.status(e.status).send({
+            error: e.message, status: e.status
+        });
+    }
+    if (e instanceof AxiosError) {
+        res.status(e.status || 400).send(e.response?.data || {
+            error: "AxiosError", status: 400
+        });
+        return;
+    }
+    let code = 0;
+    if (Array.isArray(e) && e.length==2) {
+        if (+e[0]) {
+            code = +e[0];
+            e = e[1];
+        } else if (+e[1]) {
+            code = +e[1];
+            e = e[0];
+        } else {
+            e = e[0] +' '+ e[1];
+        }
+    }
+    if (!code && typeof e === "string") {
+        if (e.includes("found")) {
+            code = HttpStatus.NOT_FOUND;
+        } else code = HttpStatus.BAD_REQUEST
+    }
+    if (!code) {
+        console.error('\x1b[31m', e);
+        e = "Internal Server Error"
+        code = HttpStatus.INTERNAL_SERVER_ERROR;
+    }
+    res.status(code).send({
+        error: e, 
+        status: code
+    });
 }
