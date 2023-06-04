@@ -44,14 +44,18 @@ export default class MicroServer {
         this.api = axios.create({
             baseURL: path,
             timeout: 5000,
-            headers: {
-                'micro-server': jwt.sign(
-                    { server: process.env.MICRO_SERVER_ID }, 
-                    globalEnv.tokens.server, 
-                    { expiresIn: '10d' }
-                )
-            }
         });
+        this.regenerateToken();
+        setInterval(() => {
+            this.regenerateToken();
+        }, 11.5*60*60*1000) // 11.5 hours
+    }
+    private regenerateToken() {
+        this.api.defaults.headers['micro-server'] = jwt.sign(
+            { server: process.env.MICRO_SERVER_ID || this.id }, 
+            globalEnv.tokens.server, 
+            { expiresIn: '12h' }
+        );
     }
 
     async registerRoutes(prefix: string, routes: { [path: string]: any }) {

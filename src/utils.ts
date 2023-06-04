@@ -1,4 +1,10 @@
-const mstime: any = require('jsonwebtoken/node_modules/ms/index');
+const mstime: any = () => {
+    try {
+        return require('jsonwebtoken/node_modules/ms/index');
+    } catch {
+        return require('ms');
+    }
+}
 
 export const bits = {
     add(bitsArray: number, index: number): number {
