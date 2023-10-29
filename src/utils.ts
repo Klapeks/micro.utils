@@ -1,10 +1,10 @@
-const mstime: any = () => {
+const mstime: any = (() => {
     try {
         return require('jsonwebtoken/node_modules/ms/index');
     } catch {
         return require('ms');
     }
-}
+})();
 
 export const bits = {
     add(bitsArray: number, index: number): number {
@@ -18,6 +18,12 @@ export const bits = {
     }
 } as const;
 
+function sleep(ms: number) {
+    return new Promise<void>(resolve => {
+        setTimeout(resolve, ms);
+    });
+}
+
 export default {
     replaceLast(str: string, from: string, to: string): string {
         const lastIndex = str.lastIndexOf(from);
@@ -29,9 +35,5 @@ export default {
         if (typeof time === "number") return time;
         return mstime(time)
     },
-    async delay(ms: number){
-        return new Promise<void>(resolve => {
-            setTimeout(resolve, ms);
-        })
-    }
+    delay: sleep, sleep: sleep,
 } as const;
