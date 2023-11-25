@@ -24,6 +24,11 @@ function sleep(ms: number) {
     });
 }
 
+export function assertNever(never: never): never {
+    console.error("Never assert failed", never);
+    throw "Never assert failed: " + never;
+}
+
 export default {
     replaceLast(str: string, from: string, to: string): string {
         const lastIndex = str.lastIndexOf(from);
@@ -35,5 +40,5 @@ export default {
         if (typeof time === "number") return time;
         return mstime(time)
     },
-    delay: sleep, sleep: sleep,
+    delay: sleep, sleep, assertNever
 } as const;

@@ -4,6 +4,6 @@ import { HttpException, HttpStatus, NotAuthException } from "./dist/express-util
 import MRouter from "./dist/express-utils/mrouter";
 import globalEnv from "./dist/global.env";
 import MicroServer, { MicroAxios } from "./dist/micro.server";
-import utils, { bits } from './dist/utils';
+import utils, { assertNever, bits } from './dist/utils';
 export type SelfUser = ISelfUser;
-export { MRouter, HttpStatus, HttpException, NotAuthException, AuthTokens, MicroServer, MicroAxios, globalEnv, parseDatabasePath, utils, bits };
+export { MRouter, HttpStatus, HttpException, NotAuthException, AuthTokens, MicroServer, MicroAxios, globalEnv, parseDatabasePath, utils, bits, assertNever };
