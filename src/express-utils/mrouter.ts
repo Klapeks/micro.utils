@@ -1,6 +1,5 @@
-import { AxiosError } from "axios";
 import { Request, Response, Router } from "express";
-import { HttpException, HttpStatus, catchRouterError } from "./exceptions";
+import { catchRouterError } from "./exceptions";
 
 interface CallbackType {
     req: Request;

@@ -74,8 +74,9 @@ export function catchRouterError(e: any, res: Response) {
         });
     }
     if (e instanceof AxiosError) {
-        res.status(e.status || 400).send(e.response?.data || {
-            error: "AxiosError", status: 400
+        const status = e.response.status || e.status || 400;
+        res.status(status).send(e.response?.data || {
+            error: "AxiosError", status
         });
         return;
     }
@@ -106,3 +107,4 @@ export function catchRouterError(e: any, res: Response) {
         status: code
     });
 }
+

@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosError, AxiosInstance } from "axios";
 import express, { Express, Request, Router } from "express"
 import jwt from "jsonwebtoken";
 import { AddressInfo } from "net";
@@ -15,12 +15,43 @@ interface ServerOptions {
     /** Absolute path to global.env */
     env: string
 }
+type AI = AxiosInstance;
+export type MicroAxios = AxiosInstance & {
+    getData<T = any>(...params: Parameters<AI['get']>): Promise<T>,
+    postData<T = any>(...params: Parameters<AI['post']>): Promise<T>,
+    patchData<T = any>(...params: Parameters<AI['patch']>): Promise<T>,
+    deleteData<T = any>(...params: Parameters<AI['delete']>): Promise<T>,
+}
+function is502err(err: any): any {
+    if (err?.response?.status === 502) {
+        err = err.request.path || err.config.url;
+        if (!err) throw {message: "Bad Gateway", status: 502};
+        throw { message: "Can't access " + err, status: 502 };
+    }
+    throw err;
+}
+function toMicroAxios(axios: AxiosInstance): MicroAxios {
+    const api = axios as MicroAxios;
+    api.getData = async function (...params: Parameters<AI['get']>) {
+        return (await api.get(...params).catch(is502err)).data;
+    };
+    api.postData = async function (...params: Parameters<AI['post']>) {
+        return (await api.post(...params).catch(is502err)).data;
+    };
+    api.deleteData = async function (...params: Parameters<AI['delete']>) {
+        return (await api.delete(...params).catch(is502err)).data;
+    };
+    api.patchData = async function (...params: Parameters<AI['patch']>) {
+        return (await api.patch(...params).catch(is502err)).data;
+    };
+    return api;
+}
 
 export default class MicroServer {
     readonly id: string;
     readonly port: number;
     readonly app: Express;
-    readonly api: AxiosInstance;
+    readonly api: MicroAxios;
 
     private _loadingRoutes = 0;
     private _started = false;
@@ -41,10 +72,9 @@ export default class MicroServer {
         if (!path) throw "NO GLOBAL SERVER IP"
         if (!path.endsWith('/')) path += '/'
         path += 'api';
-        this.api = axios.create({
-            baseURL: path,
-            timeout: 5000,
-        });
+        this.api = toMicroAxios(axios.create({
+            baseURL: path, timeout: 15000,
+        }));
         this.regenerateToken();
         setInterval(() => {
             this.regenerateToken();

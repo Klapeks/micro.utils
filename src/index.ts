@@ -3,7 +3,7 @@ import parseDatabasePath from "./data/dbpath.parser";
 import { HttpException, HttpStatus, NotAuthException } from "./express-utils/exceptions";
 import MRouter from "./express-utils/mrouter";
 import globalEnv from "./global.env";
-import MicroServer from "./micro.server";
+import MicroServer, { MicroAxios } from "./micro.server";
 import utils, { bits } from './utils';
 
 export type SelfUser = ISelfUser;
@@ -14,6 +14,7 @@ export {
     NotAuthException,
     AuthTokens,
     MicroServer,
+    MicroAxios,
     globalEnv,
     parseDatabasePath,
     utils, bits
