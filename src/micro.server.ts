@@ -25,8 +25,8 @@ export type MicroAxios = AxiosInstance & {
 function is502err(err: any): any {
     if (err?.response?.status === 502) {
         err = err.request.path || err.config.url;
-        if (!err) throw {message: "Bad Gateway", status: 502};
-        throw { message: "Can't access " + err, status: 502 };
+        if (!err) throw new HttpException("Bad Gateway", 502);
+        throw new HttpException("Can't access " + err, 502);
     }
     throw err;
 }
