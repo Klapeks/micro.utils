@@ -56,3 +56,11 @@ export default class MRouter {
         this.router.post(path, this.callback("post", callback))
     }
 }
+
+const PingRouter = Router();
+PingRouter.all('/', (req, res) => {
+    res.status(200).send("pong");
+});
+export const DefaultRoutes = {
+    PingRouter
+}
