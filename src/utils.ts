@@ -40,5 +40,12 @@ export default {
         if (typeof time === "number") return time;
         return mstime(time)
     },
-    delay: sleep, sleep, assertNever
+    delay: sleep, sleep, assertNever,
+    random(max: number) {
+        return (Math.random() * max) | 0;
+    },
+    randomInclude(max: number) {
+        // return Math.round(Math.random() * max); // bad
+        return Math.floor(Math.random() * (max+1)); // good
+    }
 } as const;
