@@ -16,6 +16,10 @@ function co(tokenExpire: string) {
     }
 }
 
+const TOKEN_PREFIX = (process.env.TOKENS_PREFIX || "mi") + "_";
+const ACCESS_TOKEN = TOKEN_PREFIX+'access_token';
+const REFRESH_TOKEN = TOKEN_PREFIX+'refresh_token';
+
 const AuthTokens = {
     async validUser(req: Request, res: Response): Promise<SelfUser> {
         try {
@@ -23,6 +27,9 @@ const AuthTokens = {
         } catch (e) {}
         if (req.headers.authorization) {
             throw new HttpException("Auth token expired", HttpStatus.UNAUTHORIZED);
+        }
+        if (!AuthTokens.isServerControlTokensAllowed(req)) {
+            throw new HttpException("Needed auth token in headers", HttpStatus.UNAUTHORIZED);
         }
         try {
             const newTokens = (await axios.post(globalEnv.servers.auth_refresh, {
@@ -34,11 +41,16 @@ const AuthTokens = {
             throw new HttpException("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
     },
+    isServerControlTokensAllowed(req: Request) {
+        const data = req.headers['x-control-tokens']
+                || req.headers['X-Control-Tokens'];
+        return data !== 'client';
+    },
     setResponseTokens(res: Response, tokens: {
         refresh_token: string, auth_token: string
     }) {
-        res.cookie("s_refresh_token", tokens.refresh_token, co(globalEnv.tokens.expire.refresh));
-        res.cookie("s_auth_token", tokens.auth_token, co(globalEnv.tokens.expire.auth));
+        res.cookie('s'+REFRESH_TOKEN, tokens.refresh_token, co(globalEnv.tokens.expire.refresh));
+        res.cookie('s'+ACCESS_TOKEN, tokens.auth_token, co(globalEnv.tokens.expire.auth));
     },
     genTokens(user: SelfUser) {
         return {
@@ -47,10 +59,10 @@ const AuthTokens = {
         }
     },
     reqAuthToken(req: Request) {
-        return req.cookies?.s_auth_token || req.headers?.authorization;
+        return req.cookies?.['s'+ACCESS_TOKEN] || req.headers?.authorization;
     },
     reqRefreshToken(req: Request) {
-        return req.cookies?.s_refresh_token || req.body?.refresh_token;
+        return req.cookies?.['s'+REFRESH_TOKEN] || req.body?.refresh_token;
     },
     genAuthToken(user: SelfUser): string {
         return jwt.sign(user, globalEnv.tokens.auth, {

@@ -8,6 +8,7 @@ import { HttpException, HttpStatus } from "./express-utils/exceptions";
 import registerRoutes from "./express-utils/register.routes";
 import globalEnv from "./global.env";
 import utils from "./utils";
+// import cors from "cors";
 
 interface ServerOptions {
     id: string,
@@ -61,8 +62,9 @@ export default class MicroServer {
         this.port = options.port;
         globalEnv.parseEnv(options.env);
 
-        this.app = express()
-        this.app.use(express.json())
+        this.app = express();
+        // this.app.use(cors());
+        this.app.use(express.json());
         this.app.use(cookieParser);
 
         const showErrors = (process.env.SHOW_DATABASE_ERRORS_IN_FRONEND?.toString())?.toLowerCase() === "true";
