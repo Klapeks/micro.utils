@@ -26,7 +26,7 @@ const AuthTokens = {
             return AuthTokens.verifyAuth(AuthTokens.reqAuthToken(req));
         } catch (e) {}
         if (req.headers.authorization) {
-            throw new HttpException("Auth token expired", HttpStatus.UNAUTHORIZED);
+            throw new HttpException("Auth token expired", HttpStatus.LOCKED);
         }
         if (!AuthTokens.isServerControlTokensAllowed(req)) {
             throw new HttpException("Needed auth token in headers", HttpStatus.UNAUTHORIZED);
@@ -80,14 +80,14 @@ const AuthTokens = {
             user = +(user as any).userId || +user;
             if (user) return user;
         } catch (e) {}
-        throw "Invalid refresh token";
+        throw new HttpException("Refresh token expired", HttpStatus.LOCKED);
     },
     verifyAuth(auth_token: string): SelfUser {
         if (auth_token) try {
             const user = jwt.verify(auth_token, globalEnv.tokens.auth);
             if (AuthTokens.isSelfUser(user)) return user;
         } catch (e) {}
-        throw "Invalid token";
+        throw new HttpException("Auth token expired", HttpStatus.LOCKED);
     },
     isSelfUser(object: any): object is SelfUser {
         if (!object) return false;
