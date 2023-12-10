@@ -27,7 +27,7 @@ export default class MRouter {
         else this.cargs.converter = converter;
     }
 
-    private callback(method: "get" | "post", callback: Callback) {
+    private _use(callback: Callback) {
         return async (req: Request, res: Response) => {
             try {
                 let a = callback({req, res});
@@ -49,11 +49,25 @@ export default class MRouter {
     }
 
     get(path: string, callback: Callback) {
-        this.router.get(path, this.callback("get", callback))
+        this.router.get(path, this._use(callback))
     }
-
     post(path: string, callback: Callback) {
-        this.router.post(path, this.callback("post", callback))
+        this.router.post(path, this._use(callback))
+    }
+    delete(path: string, callback: Callback, withPost = false) {
+        this.router.delete(path, this._use(callback));
+        if (withPost) this.post(path, callback);
+    }
+    patch(path: string, callback: Callback, withPost = false) {
+        this.router.patch(path, this._use(callback))
+        if (withPost) this.post(path, callback);
+    }
+    put(path: string, callback: Callback, withPost = false) {
+        this.router.put(path, this._use(callback))
+        if (withPost) this.post(path, callback);
+    }
+    all(path: string, callback: Callback) {
+        this.router.all(path, this._use(callback))
     }
 }
 
