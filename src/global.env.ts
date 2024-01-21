@@ -1,33 +1,109 @@
 import pathMod from "path"
+import fs from "fs"
+import { ServerOptions } from "./micro.server";
+import dotenv from 'dotenv';
 
+function dotenvConfig(path: string) {
+    dotenv.config({ path });
+}
+
+function implementAppEnv(app: string, links: ServerOptions['links']) {
+    app = app.toUpperCase();
+    const env: any = process.env;
+    if (!links.domain) links.domain = env[app+"_DOMAIN"];
+    if (!links.main) links.main = env[app+"_MAIN"];
+    if (!links.api) links.api = env[app+"_API"];
+    if (!links.refresh) links.refresh = env['AUTH_REFRESH_URL'];
+    
+    if (links.domain) globalEnv.servers.domain = links.domain;
+    if (links.main) globalEnv.servers.main = links.main;
+    if (links.api) globalEnv.servers.api = links.api;
+    if (links.refresh) globalEnv.servers.auth_refresh = links.refresh;
+}
+function implementEnv(options: ServerOptions) {
+    const env: any = process.env;
+
+    globalEnv.isDebug = env.DEBUG == 'true';
+
+    globalEnv.servers = {
+        domain: env.GLOBAL_SERVER,
+        main: env.GLOBAL_SERVER,
+        api: env.GLOBAL_SERVER,
+        auth_refresh: env.AUTH_REFRESH_URL
+    }
+    globalEnv.tokens = {
+        auth: env.AUTH_TOKEN || env.ACCESS_TOKEN,
+        refresh: env.REFRESH_TOKEN,
+        server: env.GLOBAL_TOKEN,
+        prefix: env.TOKEN_PREFIX || env.TOKENS_PREFIX,
+        expire: {
+            auth: env.AUTH_EXPIRE || env.ACCESS_EXPIRE,
+            refresh: env.REFRESH_EXPIRE,
+        }
+    }
+    if (options.app || env.APP) {
+        const app: string = options.app || env.APP;
+        implementAppEnv(app, options.links);
+    }
+}
+function parseEnv(env: ServerOptions['env']) {
+    if (typeof env == 'string') {
+        if (env.endsWith('global.env')) {
+            return dotenvConfig(env);
+        }
+        env = { folder: env };
+    }
+    if (!env.portYaml) {
+        env.portYaml = process.env.PORT_YAML;
+    }
+    if (!env.import) {
+        env.import = process.env.IMPORT_ENV;
+    }
+    if (typeof env.import == 'string') {
+        if (env.import.includes(',')) {
+            env.import = env.import.split(',');
+        } else {
+            env.import = env.import.split(" ");
+        }
+    }
+    for (let file of env.import) {
+        file = file.trim();
+        if (!file) continue;
+        if (!file.endsWith('.env')) {
+            file += '.env';
+        }
+        file = pathMod.join(env.folder, file);
+        if (process.env.DEBUG == 'true') {
+            console.log("env parsing", file);
+        }
+        if (!fs.existsSync(file)) {
+            throw new Error(`No file ${file} found for be parsed as .env`);
+        }
+        dotenvConfig(file);
+    }
+}
 const globalEnv = {
-    parseEnv(absolutePath: string) {
-        if (!absolutePath.endsWith('global.env')) {
-            absolutePath = pathMod.join(absolutePath, 'global.env');
-        }
-        require('dotenv').config({ path: absolutePath });
-
-        globalEnv.isDebug = process.env.DEBUG == 'true';
-
-        globalEnv.servers = {
-            ip: process.env.GLOBAL_SERVER,
-            auth_refresh: process.env.AUTH_REFRESH_URL
-        }
-        globalEnv.tokens = {
-            auth: process.env.AUTH_TOKEN,
-            refresh: process.env.REFRESH_TOKEN,
-            server: process.env.GLOBAL_TOKEN,
-            expire: {
-                auth: process.env.AUTH_EXPIRE,
-                refresh: process.env.REFRESH_EXPIRE,
-            }
+    parseMicro(options: ServerOptions) {
+        parseEnv(options.env);
+        implementEnv(options);
+        if (globalEnv.isDebug) {
+            // delete globalEnv.parseMicro;
+            console.log("Global env parsed with options", options);
+            console.log("Global env parsed to object:", globalEnv);
+            // globalEnv.parseMicro = () => {};
         }
     },
     tokens: {
         auth: '',  refresh: '',  server: '',
+        prefix: '',
         expire: { auth: '',  refresh: '' }
     },
-    servers: { ip: '',  auth_refresh: '' },
+    servers: { 
+        main: '',
+        domain: '',
+        api: '',
+        auth_refresh: '' 
+    },
     isDebug: false
 }
 

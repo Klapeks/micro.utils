@@ -10,11 +10,29 @@ import globalEnv from "./global.env";
 import utils from "./utils";
 // import cors from "cors";
 
-interface ServerOptions {
+export interface ServerOptions {
     id: string,
     port: number,
-    /** Absolute path to global.env */
-    env: string
+    /** Absolute path to global.env or paths */
+    env: string | {
+        folder: string,
+        /** @default env.IMPORT_ENV */
+        import?: string | string[],
+        /** @default env.PORT_YAML */
+        portYaml?: string,
+    },
+    /** @default env.APP */
+    app?: string,
+    links?: {
+        /** @default env.%APP%_DOMAIN */
+        domain?: string;
+        /** @default env.%APP%_MAIN */
+        main?: string;
+        /** @default env.%APP%_API */
+        api?: string
+        /** @default env.AUTH_REFRESH_URL */
+        refresh?: string
+    }
 }
 type AI = AxiosInstance;
 export type MicroAxios = AxiosInstance & {
@@ -60,7 +78,7 @@ export default class MicroServer {
     constructor(options: ServerOptions) {
         this.id = options.id;
         this.port = options.port;
-        globalEnv.parseEnv(options.env);
+        globalEnv.parseMicro(options);
 
         this.app = express();
         // this.app.use(cors());
@@ -70,17 +88,19 @@ export default class MicroServer {
         const showErrors = (process.env.SHOW_DATABASE_ERRORS_IN_FRONEND?.toString())?.toLowerCase() === "true";
         this.app.on("event:after_init", afterInit(this.app, showErrors));
         
-        let path = globalEnv.servers.ip;
-        if (!path) throw "NO GLOBAL SERVER IP"
-        if (!path.endsWith('/')) path += '/'
-        path += 'api';
+        let path = globalEnv.servers.api;
+        if (!path) throw "NO API"
+        if (path.endsWith('/')) {
+            path = path.substring(0, path.length-1);
+        }
+        if (!path.endsWith('/api')) path += '/api';
         this.api = toMicroAxios(axios.create({
             baseURL: path, timeout: 15000,
         }));
         this.regenerateToken();
         setInterval(() => {
             this.regenerateToken();
-        }, 11.5*60*60*1000) // 11.5 hours
+        }, 10*60*60*1000) // 10 hours
     }
     private regenerateToken() {
         this.api.defaults.headers['micro-server'] = jwt.sign(
