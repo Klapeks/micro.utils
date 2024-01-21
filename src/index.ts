@@ -1,5 +1,5 @@
 import AuthTokens, { SelfUser as ISelfUser } from "./auth.tokens";
-import parseDatabasePath from "./data/dbpath.parser";
+import {parseDatabasePath,dataSourceOptions} from "./data/dbpath.parser";
 import { HttpException, HttpStatus, NotAuthException } from "./express-utils/exceptions";
 import MRouter, { DefaultRoutes } from "./express-utils/mrouter";
 import globalEnv from "./global.env";
@@ -18,6 +18,7 @@ export {
     MicroAxios,
     globalEnv,
     parseDatabasePath,
+    dataSourceOptions,
     utils, bits,
     assertNever
 }
