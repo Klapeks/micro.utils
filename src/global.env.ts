@@ -7,9 +7,10 @@ function dotenvConfig(path: string) {
     dotenv.config({ path });
 }
 
-function implementAppEnv(app: string, links: ServerOptions['links']) {
+function implementAppEnv(app: string, links?: ServerOptions['links']) {
     app = app.toUpperCase();
     const env: any = process.env;
+    if (!links) links = {};
     if (!links.domain) links.domain = env[app+"_DOMAIN"];
     if (!links.main) links.main = env[app+"_MAIN"];
     if (!links.api) links.api = env[app+"_API"];
