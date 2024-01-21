@@ -85,9 +85,10 @@ function parseEnv(env: ServerOptions['env']) {
 }
 const globalEnv = {
     parseMicro(options: ServerOptions) {
+        globalEnv.utilsLogs = options.logging;
         parseEnv(options.env);
         implementEnv(options);
-        if (globalEnv.isDebug) {
+        if (globalEnv.isDebug && globalEnv.utilsLogs) {
             // delete globalEnv.parseMicro;
             console.log("Global env parsed with options", options);
             console.log("Global env parsed to object:", globalEnv);
@@ -105,6 +106,7 @@ const globalEnv = {
         api: '',
         auth_refresh: '' 
     },
+    utilsLogs: false,
     isDebug: false
 }
 

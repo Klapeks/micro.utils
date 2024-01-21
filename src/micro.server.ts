@@ -32,7 +32,8 @@ export interface ServerOptions {
         api?: string
         /** @default env.AUTH_REFRESH_URL */
         refresh?: string
-    }
+    },
+    logging?: boolean
 }
 type AI = AxiosInstance;
 export type MicroAxios = AxiosInstance & {
