@@ -76,7 +76,19 @@ export default class MicroServer {
     private _loadingRoutes = 0;
     private _started = false;
 
-    constructor(options: ServerOptions) {
+    constructor(options?: ServerOptions) {
+        if (!options) {
+            const env = process.env as any;
+            if (!env.APP) throw `No APP found in .env (or try to use options param)`;
+            options = {
+                id: env.MICRO_SERVER,
+                port: +env.PORT,
+                env: env[env.APP+"_PATH"]
+            }
+            if (!options.id) throw `No MICRO_SERVER found in .env (or try to use options param)`;
+            if (!options.port) throw `No PORT nor PORT_YAML found in .env (or try to use options param)`;
+            if (!options.env) throw `No ${env.APP}_PATH found in .env (or try to use options param)`;
+        }
         this.id = options.id;
         this.port = options.port;
         globalEnv.parseMicro(options);
