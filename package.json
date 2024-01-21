@@ -1,7 +1,7 @@
 {
   "name": "@klapeks/micro.utils",
   "description": "microservice utils",
-  "version": "1.6.2-beta1",
+  "version": "1.6.2-beta2",
   "type": "commonjs",
   "author": "Klapeks",
   "license": "ISC",
@@ -10,11 +10,6 @@
     "utils",
     "microservice",
     "microservices"
-  ],
-  "files": [
-    "dist",
-    "index.js",
-    "index.d.ts"
   ],
   "repository": {
     "type": "git",
