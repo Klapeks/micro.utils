@@ -80,14 +80,15 @@ export default class MicroServer {
         if (!options) {
             const env = process.env as any;
             if (!env.APP) throw `No APP found in .env (or try to use options param)`;
+            const app = (env.APP as string).toUpperCase();
             options = {
                 id: env.MICRO_SERVER,
                 port: +env.PORT,
-                env: env[env.APP+"_PATH"]
+                env: env[app+"_PATH"]
             }
             if (!options.id) throw `No MICRO_SERVER found in .env (or try to use options param)`;
             if (!options.port) throw `No PORT nor PORT_YAML found in .env (or try to use options param)`;
-            if (!options.env) throw `No ${env.APP}_PATH found in .env (or try to use options param)`;
+            if (!options.env) throw `No ${app}_PATH found in .env (or try to use options param)`;
         }
         this.id = options.id;
         this.port = options.port;
