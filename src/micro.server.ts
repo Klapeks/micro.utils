@@ -84,7 +84,8 @@ export default class MicroServer {
             options = {
                 id: env.MICRO_SERVER,
                 port: +env.PORT,
-                env: env[app+"_PATH"]
+                env: env[app+"_PATH"],
+                logging: env.DEBUG_MICRO_UTILS == 'true'
             }
             if (!options.id) throw `No MICRO_SERVER found in .env (or try to use options param)`;
             if (!options.port) throw `No PORT nor PORT_YAML found in .env (or try to use options param)`;
