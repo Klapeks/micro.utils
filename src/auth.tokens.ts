@@ -59,7 +59,14 @@ const AuthTokens = {
         }
     },
     reqAuthToken(req: Request) {
-        return req.headers?.authorization || req.cookies?.['s'+ACCESS_TOKEN];
+        let auth: string = req.headers?.authorization 
+            || req.cookies?.['s'+ACCESS_TOKEN];
+        if (!auth) return auth;
+        if (auth.toLowerCase().startsWith('bearer')) {
+            auth = auth.substring(6);
+        }
+        while (auth[0] == ' ') auth = auth.substring(1);
+        return auth;
     },
     reqRefreshToken(req: Request) {
         return req.body?.refresh_token || req.cookies?.['s'+REFRESH_TOKEN];
