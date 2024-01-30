@@ -59,10 +59,10 @@ const AuthTokens = {
         }
     },
     reqAuthToken(req: Request) {
-        return req.cookies?.['s'+ACCESS_TOKEN] || req.headers?.authorization;
+        return req.headers?.authorization || req.cookies?.['s'+ACCESS_TOKEN];
     },
     reqRefreshToken(req: Request) {
-        return req.cookies?.['s'+REFRESH_TOKEN] || req.body?.refresh_token;
+        return req.body?.refresh_token || req.cookies?.['s'+REFRESH_TOKEN];
     },
     genAuthToken(user: SelfUser): string {
         return jwt.sign(user, globalEnv.tokens.auth, {
