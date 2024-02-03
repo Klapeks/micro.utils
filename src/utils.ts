@@ -29,7 +29,7 @@ export function assertNever(never: never): never {
     throw "Never assert failed: " + never;
 }
 
-export default {
+const utils = {
     replaceLast(str: string, from: string, to: string): string {
         const lastIndex = str.lastIndexOf(from);
         if (lastIndex < 0) return str;
@@ -47,5 +47,29 @@ export default {
     randomInclude(max: number) {
         // return Math.round(Math.random() * max); // bad
         return Math.floor(Math.random() * (max+1)); // good
+    },
+    copyFiltered<T>(object: Partial<T>, keys: (keyof T)[]): Partial<T> {
+        const obj: Partial<T> = {};
+        for (let key of keys) {
+            if (object[key] === undefined) continue;
+            if (typeof object[key] == 'undefined') continue;
+            obj[key] = object[key];
+        }
+        return obj;
+    },
+    removeUndefineds(object: any, deep = true): any {
+        if (typeof object != 'object') return object;
+        for (let key of Object.keys(object)) {
+            if (object[key] === undefined) delete object[key];
+            else if (typeof object[key] === 'undefined') {
+                delete object[key];
+            }
+            else if (deep && typeof object[key] == 'object') {
+                object[key] = utils.removeUndefineds(object[key]);
+            }
+        }
+        return object;
     }
 } as const;
+
+export default utils;

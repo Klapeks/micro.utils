@@ -16,9 +16,9 @@ function co(tokenExpire: string) {
     }
 }
 
-const TOKEN_PREFIX = (process.env.TOKENS_PREFIX || "mi") + "_";
-const ACCESS_TOKEN = TOKEN_PREFIX+'access_token';
-const REFRESH_TOKEN = TOKEN_PREFIX+'refresh_token';
+const TOKENS_PREFIX = (process.env.TOKENS_PREFIX || "mi") + "_";
+const ACCESS_TOKEN = TOKENS_PREFIX+'access_token';
+const REFRESH_TOKEN = TOKENS_PREFIX+'refresh_token';
 
 const AuthTokens = {
     async validUser(req: Request, res: Response): Promise<SelfUser> {
@@ -59,10 +59,17 @@ const AuthTokens = {
         }
     },
     reqAuthToken(req: Request) {
-        return req.cookies?.['s'+ACCESS_TOKEN] || req.headers?.authorization;
+        let auth: string = req.headers?.authorization 
+            || req.cookies?.['s'+ACCESS_TOKEN];
+        if (!auth) return auth;
+        if (auth.toLowerCase().startsWith('bearer')) {
+            auth = auth.substring(6);
+        }
+        while (auth[0] == ' ') auth = auth.substring(1);
+        return auth;
     },
     reqRefreshToken(req: Request) {
-        return req.cookies?.['s'+REFRESH_TOKEN] || req.body?.refresh_token;
+        return req.body?.refresh_token || req.cookies?.['s'+REFRESH_TOKEN];
     },
     genAuthToken(user: SelfUser): string {
         return jwt.sign(user, globalEnv.tokens.auth, {
