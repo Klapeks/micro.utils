@@ -10,29 +10,36 @@ async function toRouter(router: R): Promise<Router> {
     return router;
 }
 
-export default async function registerRoutes(app: IRouter, prefix: string | undefined, routers: {[path: string]: R}) {
+export default async function registerRoutes(app: IRouter, prefix: string | undefined, routers: {[path: string]: R | R[]}) {
     let isRouterError = 0;
+    let _routers: R | R[] = [];
     for (let path of Object.keys(routers)) {
         if (globalEnv.isDebug) console.log('loading routes...', prefix, path);
-        const router = routers[path];
-        try {
-            if (!path) {
-                if (!prefix) app.use(await toRouter(router));
-                else app.use(prefix, await toRouter(router));
-                if (globalEnv.isDebug) console.log('router was loaded', prefix, path)
-                return;
+        _routers = routers[path];
+        if (!Array.isArray(_routers)) _routers = [_routers];
+        for (let router of _routers) {
+            try {
+                if (!path) {
+                    if (!prefix) app.use(await toRouter(router));
+                    else app.use(prefix, await toRouter(router));
+                    if (globalEnv.isDebug) console.log('router was loaded', prefix, path)
+                    return;
+                }
+                let np = path;
+                if (!np.startsWith("/")) np = "/" + np;
+                if (prefix) np = prefix + np;
+                // console.log(np);
+                app.use(np, await toRouter(router));
+                if (globalEnv.isDebug) console.log('router was loaded', np);
+            } catch (e) {
+                console.error(e);
+                console.error("Failed to register router" + (path ? ' '+path : '') + ".");
+                isRouterError += 1;
             }
-            let np = path;
-            if (!np.startsWith("/")) np = "/" + np;
-            if (prefix) np = prefix + np;
-            // console.log(np);
-            app.use(np, await toRouter(router));
-            if (globalEnv.isDebug) console.log('router was loaded', np);
-        } catch (e) {
-            console.error(e);
-            console.error("Failed to register router" + (path ? ' '+path : '') + ".");
-            isRouterError += 1;
         }
     }
-    if (isRouterError) throw `Can't register ${isRouterError} routers`;
+    if (isRouterError) {
+        console.error(`Can't register ${isRouterError} routers`);
+        process.exit(1);
+    }
 }

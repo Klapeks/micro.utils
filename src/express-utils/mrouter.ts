@@ -69,6 +69,15 @@ export default class MRouter {
     all(path: string, callback: Callback) {
         this.router.all(path, this._use(callback))
     }
+
+    use(router: Router | MRouter | Promise<any>) {
+        if ('raw' in router) router = router.raw;
+        if ('then' in router) {
+            router.then((r) => this.use(r));
+            return;
+        } 
+        this.raw.use(router);
+    }
 }
 
 const PingRouter = Router();
