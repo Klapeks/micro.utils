@@ -70,7 +70,11 @@ export default class MRouter {
         this.router.all(path, this._use(callback))
     }
 
-    use(router: Router | MRouter | Promise<any>) {
+    use(router: Router | MRouter | Promise<any>): void {
+        if ('default' in router) {
+            this.use(router.default as any);
+            return;
+        }
         if ('raw' in router) router = router.raw;
         if ('then' in router) {
             router.then((r) => this.use(r));
