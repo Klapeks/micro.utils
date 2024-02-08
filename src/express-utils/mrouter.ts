@@ -72,8 +72,7 @@ export default class MRouter {
 
     use(router: Router | MRouter | Promise<any>): void {
         if ('default' in router) {
-            this.use(router.default as any);
-            return;
+            router = router.default as any;
         }
         if ('raw' in router) router = router.raw;
         if ('then' in router) {

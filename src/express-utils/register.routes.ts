@@ -5,7 +5,8 @@ import MRouter from "./mrouter";
 type R = Router | MRouter | Promise<any>;
 
 async function toRouter(router: R): Promise<Router> {
-    if ((router as any).then) router = (await router).default;
+    if ((router as any).then) router = await router;
+    if ('default' in router) router = router.default as any;
     if (router instanceof MRouter) router = router.raw;
     return router;
 }
