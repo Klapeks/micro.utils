@@ -7,6 +7,7 @@ import utils from './utils';
 
 export interface SelfUser {
     userId: number,
+    globalRole: number
 }
 
 function co(tokenExpire: string) {
