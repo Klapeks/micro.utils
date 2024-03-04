@@ -22,14 +22,14 @@ const ACCESS_TOKEN = TOKENS_PREFIX+'access_token';
 const REFRESH_TOKEN = TOKENS_PREFIX+'refresh_token';
 
 const AuthTokens = {
-    async validUser(req: Request, res: Response): Promise<SelfUser> {
+    async validUser(req: Request, res: Response | null): Promise<SelfUser> {
         try {
             return AuthTokens.verifyAuth(AuthTokens.reqAuthToken(req));
         } catch (e) {}
         if (req.headers.authorization) {
             throw new HttpException("Auth token expired", HttpStatus.LOCKED);
         }
-        if (!AuthTokens.isServerControlTokensAllowed(req)) {
+        if (!res || !AuthTokens.isServerControlTokensAllowed(req)) {
             throw new HttpException("Needed auth token in headers", HttpStatus.UNAUTHORIZED);
         }
         try {

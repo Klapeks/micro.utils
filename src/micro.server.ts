@@ -120,8 +120,7 @@ export default class MicroServer {
     private regenerateToken() {
         this.api.defaults.headers['micro-server'] = jwt.sign(
             { server: process.env.MICRO_SERVER_ID || this.id }, 
-            globalEnv.tokens.server, 
-            { expiresIn: '12h' }
+            globalEnv.tokens.server, { expiresIn: '12h' }
         );
     }
 
@@ -160,6 +159,7 @@ export default class MicroServer {
     }
 
     static validMicroServer(header: any) {
+        if ('headers' in header) header = header.headers;
         if (typeof header !== "string") header = header['micro-server'];
         try {
             return jwt.verify(header, globalEnv.tokens.server) as object;
