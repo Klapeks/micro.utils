@@ -67,7 +67,7 @@ function parseEnv(env: ServerOptions['env']) {
             env.import = env.import.split(" ");
         }
     }
-    for (let file of env.import) {
+    for (let file of env.import as string[]) {
         file = file.trim();
         if (!file) continue;
         if (!file.endsWith('.env')) {
@@ -85,7 +85,7 @@ function parseEnv(env: ServerOptions['env']) {
 }
 const globalEnv = {
     parseMicro(options: ServerOptions) {
-        globalEnv.utilsLogs = options.logging;
+        globalEnv.utilsLogs = options.logging || false;
         parseEnv(options.env);
         implementEnv(options);
         if (globalEnv.isDebug && globalEnv.utilsLogs) {

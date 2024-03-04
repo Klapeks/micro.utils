@@ -120,8 +120,7 @@ export default class MicroServer {
     private regenerateToken() {
         this.api.defaults.headers['micro-server'] = jwt.sign(
             { server: process.env.MICRO_SERVER_ID || this.id }, 
-            globalEnv.tokens.server, 
-            { expiresIn: '12h' }
+            globalEnv.tokens.server, { expiresIn: '12h' }
         );
     }
 

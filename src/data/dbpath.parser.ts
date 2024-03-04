@@ -54,10 +54,10 @@ export function dataSourceOptions(dburl?: any): DatabasePath {
     }
     return {
         type: pickEnv("type"),
-        host: pickEnv("host"),
-        port: +pickEnv('port'),
-        database: pickEnv('name'),
-        username: pickEnv('login'),
+        host: pickEnv("host")!,
+        port: +pickEnv('port')!,
+        database: pickEnv('name')!,
+        username: pickEnv('login')!,
         password: pickEnv('password'),
         logging: pickEnv('log_sql') == 'true'
             || pickEnv('sql_log') == 'true',

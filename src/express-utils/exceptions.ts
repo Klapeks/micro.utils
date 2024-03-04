@@ -75,7 +75,7 @@ export function catchRouterError(e: any, res: Response) {
         });
     }
     if (e instanceof AxiosError) {
-        const status = e.response.status || e.status || 400;
+        const status = (e as any).response.status || e.status || 400;
         res.status(status).send(e.response?.data || {
             error: "AxiosError", status
         });
