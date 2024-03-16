@@ -33,7 +33,8 @@ export interface ServerOptions {
         /** @default env.AUTH_REFRESH_URL */
         refresh?: string
     },
-    logging?: boolean
+    logging?: boolean,
+    disableUseJson?: boolean
 }
 type AI = AxiosInstance;
 export type MicroAxios = AxiosInstance & {
@@ -96,9 +97,11 @@ export default class MicroServer {
         globalEnv.parseMicro(options);
 
         this.app = express();
-        // this.app.use(cors());
-        this.app.use(express.json());
         this.app.use(cookieParser);
+        if (!options.disableUseJson) {
+            this.app.use(express.json());
+        }
+        // this.app.use(cors());
 
         const showErrors = (process.env.SHOW_DATABASE_ERRORS_IN_FRONEND?.toString())?.toLowerCase() === "true";
         this.app.on("event:after_init", afterInit(this.app, showErrors));
