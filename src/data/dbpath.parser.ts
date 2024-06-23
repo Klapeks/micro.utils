@@ -6,7 +6,8 @@ interface DatabasePath {
     username: string,
     password?: string,
     database: string,
-    logging: boolean
+    logging: boolean,
+    charset?: string
 }
 
 export function parseDatabasePath(dbpath: string): DatabasePath {
@@ -59,6 +60,7 @@ export function dataSourceOptions(dburl?: any): DatabasePath {
         database: pickEnv('name')!,
         username: pickEnv('login')!,
         password: pickEnv('password'),
+        charset: pickEnv('charset'),
         logging: pickEnv('log_sql') == 'true'
             || pickEnv('sql_log') == 'true',
     }
