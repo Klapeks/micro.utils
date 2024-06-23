@@ -12,6 +12,7 @@ export default function afterInit(app: IRouter, showErrors: boolean) {
             res.status(404).send({
                 error: "API not found",
                 'api-path': req.url,
+                method: req.method,
                 status: 404
             })
         });
