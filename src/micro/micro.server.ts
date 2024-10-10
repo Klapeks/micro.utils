@@ -2,12 +2,12 @@ import axios, { AxiosError, AxiosInstance } from "axios";
 import express, { Express, Request, Router } from "express"
 import jwt from "jsonwebtoken";
 import { AddressInfo } from "net";
-import afterInit from "./express-utils/after.init";
-import cookieParser from "./express-utils/cookie.parser";
-import { HttpException, HttpStatus } from "./express-utils/exceptions";
-import registerRoutes from "./express-utils/register.routes";
-import globalEnv from "./global.env";
-import { logger, utils } from "@klapeks/utils";
+import afterInit from "../express/after.init";
+import cookieParser from "../express/cookie.parser";
+import globalEnv from "../global.env";
+import { HttpException, HttpStatus, logger, utils } from "@klapeks/utils";
+import { createMicroAxios, MicroAxios } from "./micro.axios";
+import registerRoutes from "../express/router.register";
 // import cors from "cors";
 
 export interface ServerOptions {
@@ -36,13 +36,7 @@ export interface ServerOptions {
     logging?: boolean,
     disableUseJson?: boolean
 }
-type AI = AxiosInstance;
-export type MicroAxios = AxiosInstance & {
-    getData<T = any>(...params: Parameters<AI['get']>): Promise<T>,
-    postData<T = any>(...params: Parameters<AI['post']>): Promise<T>,
-    patchData<T = any>(...params: Parameters<AI['patch']>): Promise<T>,
-    deleteData<T = any>(...params: Parameters<AI['delete']>): Promise<T>,
-}
+
 function is502err(err: any): any {
     if (err?.response?.status === 502) {
         err = err.request.path || err.config.url;
@@ -50,22 +44,6 @@ function is502err(err: any): any {
         throw new HttpException("Can't access " + err, 502);
     }
     throw err;
-}
-function toMicroAxios(axios: AxiosInstance): MicroAxios {
-    const api = axios as MicroAxios;
-    api.getData = async function (...params: Parameters<AI['get']>) {
-        return (await api.get(...params).catch(is502err)).data;
-    };
-    api.postData = async function (...params: Parameters<AI['post']>) {
-        return (await api.post(...params).catch(is502err)).data;
-    };
-    api.deleteData = async function (...params: Parameters<AI['delete']>) {
-        return (await api.delete(...params).catch(is502err)).data;
-    };
-    api.patchData = async function (...params: Parameters<AI['patch']>) {
-        return (await api.patch(...params).catch(is502err)).data;
-    };
-    return api;
 }
 
 export default class MicroServer {
@@ -113,9 +91,7 @@ export default class MicroServer {
             path = path.substring(0, path.length-1);
         }
         if (!path.endsWith('/api')) path += '/api';
-        this.api = toMicroAxios(axios.create({
-            baseURL: path, timeout: 15000,
-        }));
+        this.api = createMicroAxios(path);
         this.regenerateToken();
         setInterval(() => {
             this.regenerateToken();

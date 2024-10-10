@@ -1,5 +1,5 @@
+import { catchRouterError } from "@klapeks/utils";
 import { IRouter } from "express";
-import { catchRouterError } from "./exceptions";
 
 export default function afterInit(app: IRouter, showErrors: boolean) {
     return () => {

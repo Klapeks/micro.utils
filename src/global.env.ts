@@ -1,6 +1,6 @@
 import pathMod from "path"
 import fs from "fs"
-import { ServerOptions } from "./micro.server";
+import { ServerOptions } from "./micro/micro.server";
 import dotenv from 'dotenv';
 import { logger } from "@klapeks/utils";
 

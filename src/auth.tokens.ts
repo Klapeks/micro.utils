@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { HttpException, HttpStatus } from './express-utils/exceptions';
+import { HttpException, HttpStatus } from './express/exceptions';
 import globalEnv from './global.env';
 import mstime from './utils/mstime';
 
