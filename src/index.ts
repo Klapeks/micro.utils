@@ -1,5 +1,4 @@
 import AuthTokens, { SelfUser as ISelfUser } from "./auth.tokens";
-import afterInit from "./express/after.init";
 import MRouter, { DefaultRoutes } from "./express/mrouter";
 import globalEnv from "./global.env";
 import { MicroAxios } from "./micro/micro.axios";
