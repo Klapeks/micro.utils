@@ -7,7 +7,7 @@ import cookieParser from "./express-utils/cookie.parser";
 import { HttpException, HttpStatus } from "./express-utils/exceptions";
 import registerRoutes from "./express-utils/register.routes";
 import globalEnv from "./global.env";
-import utils from "./utils";
+import { logger, utils } from "@klapeks/utils";
 // import cors from "cors";
 
 export interface ServerOptions {
@@ -152,8 +152,8 @@ export default class MicroServer {
         this.app.emit("event:after_init");
         const server = this.app.listen(this.port, async () => {
             if (beforeStart) await beforeStart();
-            if (!this.port) console.log("No default port was founded. Using random...");
-            console.log("Server starter at port: " + (server.address() as AddressInfo).port);
+            if (!this.port) logger.log("No default port was founded. Using random...");
+            logger.log("Server starter at port: " + (server.address() as AddressInfo).port);
         })
         return server;
     }
@@ -175,6 +175,6 @@ export default class MicroServer {
 
 
 process.on('uncaughtException', err => {
-    console.error(`Uncaught Exception:`, err, 
+    logger.error(`Uncaught Exception:`, err, 
             'error type: ' + typeof err);
 });

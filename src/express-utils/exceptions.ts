@@ -1,10 +1,13 @@
+import { logger } from "@klapeks/utils";
 import { AxiosError } from "axios";
 import { Response } from "express";
 
-export class HttpException extends Error {
+export class HttpException<T = any> extends Error {
     readonly status: number;
-    constructor(response: string, status: number = HttpStatus.BAD_REQUEST) {
-        super(response);
+    readonly response: T;
+    constructor(response: T, status: number = HttpStatus.BAD_REQUEST) {
+        super(response as any);
+        this.response = response;
         this.status = status;
         Object.setPrototypeOf(this, HttpException.prototype);
     }
@@ -71,7 +74,7 @@ export enum HttpStatus {
 export function catchRouterError(e: any, res: Response) {
     if (e instanceof HttpException) {
         return res.status(e.status).send({
-            error: e.message, status: e.status
+            error: e.response || e.message, status: e.status
         });
     }
     if (e instanceof AxiosError) {
@@ -99,7 +102,7 @@ export function catchRouterError(e: any, res: Response) {
         } else code = HttpStatus.BAD_REQUEST
     }
     if (!code) {
-        console.error('\x1b[31m', e);
+        logger.error(e);
         e = "Internal Server Error"
         code = HttpStatus.INTERNAL_SERVER_ERROR;
     }

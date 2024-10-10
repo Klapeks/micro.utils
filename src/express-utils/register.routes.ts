@@ -1,6 +1,7 @@
 import { IRoute, IRouter, Router } from "express";
 import globalEnv from "../global.env";
 import MRouter from "./mrouter";
+import { logger } from "@klapeks/utils";
 
 type R = Router | MRouter | Promise<any>;
 
@@ -15,7 +16,7 @@ export default async function registerRoutes(app: IRouter, prefix: string | unde
     let isRouterError = 0;
     let _routers: R | R[] = [];
     for (let path of Object.keys(routers)) {
-        if (globalEnv.isDebug) console.log('loading routes...', prefix, path);
+        logger.debug('loading routes...', prefix, path);
         _routers = routers[path];
         if (!Array.isArray(_routers)) _routers = [_routers];
         for (let router of _routers) {
@@ -23,7 +24,7 @@ export default async function registerRoutes(app: IRouter, prefix: string | unde
                 if (!path) {
                     if (!prefix) app.use(await toRouter(router));
                     else app.use(prefix, await toRouter(router));
-                    if (globalEnv.isDebug) console.log('router was loaded', prefix, path)
+                    logger.debug('router was loaded', prefix, path)
                     return;
                 }
                 let np = path;
@@ -33,14 +34,14 @@ export default async function registerRoutes(app: IRouter, prefix: string | unde
                 app.use(np, await toRouter(router));
                 if (globalEnv.isDebug) console.log('router was loaded', np);
             } catch (e) {
-                console.error(e);
-                console.error("Failed to register router" + (path ? ' '+path : '') + ".");
+                logger.error(e);
+                logger.error("Failed to register router" + (path ? ' '+path : '') + ".");
                 isRouterError += 1;
             }
         }
     }
     if (isRouterError) {
-        console.error(`Can't register ${isRouterError} routers`);
+        logger.error(`Can't register ${isRouterError} routers`);
         process.exit(1);
     }
 }

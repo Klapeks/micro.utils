@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { HttpException, HttpStatus } from './express-utils/exceptions';
 import globalEnv from './global.env';
-import utils from './utils';
+import mstime from './utils/mstime';
 
 export interface SelfUser {
     userId: number,
@@ -13,7 +13,7 @@ export interface SelfUser {
 function co(tokenExpire: string) {
     return {
         httpOnly: true,
-        expires: new Date(Date.now() + utils.mstime(tokenExpire))
+        expires: new Date(Date.now() + mstime(tokenExpire))
     }
 }
 

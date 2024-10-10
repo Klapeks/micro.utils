@@ -2,6 +2,7 @@ import pathMod from "path"
 import fs from "fs"
 import { ServerOptions } from "./micro.server";
 import dotenv from 'dotenv';
+import { logger } from "@klapeks/utils";
 
 function dotenvConfig(path: string) {
     dotenv.config({ path });
@@ -74,9 +75,7 @@ function parseEnv(env: ServerOptions['env']) {
             file += '.env';
         }
         file = pathMod.join(env.folder, file);
-        if (process.env.DEBUG == 'true') {
-            console.log("env parsing", file);
-        }
+        logger.debug("env parsing", file);
         if (!fs.existsSync(file)) {
             throw new Error(`No file ${file} found for be parsed as .env`);
         }
@@ -90,8 +89,8 @@ const globalEnv = {
         implementEnv(options);
         if (globalEnv.isDebug && globalEnv.utilsLogs) {
             // delete globalEnv.parseMicro;
-            console.log("Global env parsed with options", options);
-            console.log("Global env parsed to object:", globalEnv);
+            logger.debug("Global env parsed with options", options);
+            logger.debug("Global env parsed to object:", globalEnv);
             // globalEnv.parseMicro = () => {};
         }
     },
