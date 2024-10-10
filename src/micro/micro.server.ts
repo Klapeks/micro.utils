@@ -37,15 +37,6 @@ export interface ServerOptions {
     disableUseJson?: boolean
 }
 
-function is502err(err: any): any {
-    if (err?.response?.status === 502) {
-        err = err.request.path || err.config.url;
-        if (!err) throw new HttpException("Bad Gateway", 502);
-        throw new HttpException("Can't access " + err, 502);
-    }
-    throw err;
-}
-
 export default class MicroServer {
     readonly id: string;
     readonly port: number;

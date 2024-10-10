@@ -1,8 +1,11 @@
-import { Request, Response, Router, NextFunction } from "express";
+import express from "express";
 import { catchRouterError, HttpResponse } from "@klapeks/utils";
 
-type Callback = (req: Request, res: Response) => any;
-export type RequestCallback = Callback;
+export type RequestCallback = (req: Request, res: Response) => any;
+export type Response = express.Response;
+export type Request = express.Request & { 
+    req: express.Request, res: express.Response 
+};
 
 interface ConstructorArgs {
     converter?: (val: any, req: Request, res: Response) => any,
@@ -11,7 +14,7 @@ interface ConstructorArgs {
 type ApiMethod = "get" | "post" | "all" | "delete" | "patch";
 
 export default class MRouter {
-    private router = Router();
+    private router = express.Router();
     private cargs: ConstructorArgs | undefined;
 
     constructor(args?: ConstructorArgs) {
@@ -25,9 +28,11 @@ export default class MRouter {
         else this.cargs.converter = converter;
     }
 
-    private callback(method: ApiMethod, callback: Callback) {
-        return async (req: Request, res: Response) => {
+    private callback(method: ApiMethod, callback: RequestCallback) {
+        return async (_eReq: express.Request, res: express.Response) => {
             try {
+                const req = _eReq as Request;
+                req.req = req; req.res = res;
                 let a = callback(req, res);
                 if (!a) throw "No response";
                 if (a.then) a = await a;
@@ -49,21 +54,21 @@ export default class MRouter {
         }
     }
 
-    get(path: string, callback: Callback) {
+    get(path: string, callback: RequestCallback) {
         this.router.get(path, this.callback("get", callback))
     }
-    post(path: string, callback: Callback) {
+    post(path: string, callback: RequestCallback) {
         this.router.post(path, this.callback("post", callback))
     }
-    patch(path: string, callback: Callback, withPost = false) {
+    patch(path: string, callback: RequestCallback, withPost = false) {
         this.router.patch(path, this.callback("patch", callback))
         if (withPost) this.post(path, callback);
     }
-    delete(path: string, callback: Callback, withPost = false) {
+    delete(path: string, callback: RequestCallback, withPost = false) {
         this.router.delete(path, this.callback("delete", callback))
         if (withPost) this.post(path, callback);
     }
-    use(callback: ((req: Request, res: Response) => any) | MRouter) {
+    use(callback: ((req: express.Request, res: express.Response) => any) | MRouter) {
         if (callback instanceof MRouter) {
             this.router.use(callback.raw);
             return;
@@ -80,16 +85,16 @@ export default class MRouter {
         })
     }
 
-    all(path: string, callback: Callback) {
+    all(path: string, callback: RequestCallback) {
         this.router.all(path, this.callback("all", callback))
     }
 }
 
-const PingRouter = Router();
+const PingRouter = express.Router();
 PingRouter.all('/', (req, res) => {
     res.status(200).send("pong");
 });
-const EchoRouter = Router();
+const EchoRouter = express.Router();
 EchoRouter.all('/', (req, res) => {
     res.status(200).send(req.body || "Echo");
 });
