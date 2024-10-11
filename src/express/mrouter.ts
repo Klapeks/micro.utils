@@ -96,7 +96,14 @@ PingRouter.all('/', (req, res) => {
 });
 const EchoRouter = express.Router();
 EchoRouter.all('/', (req, res) => {
-    res.status(200).send(req.body || "Echo");
+    res.status(200).send({
+        protocol: req.protocol,
+        host: req.hostname,
+        method: req.method,
+        url: req.url,
+        body: req.body,
+        ips: req.ips
+    });
 });
 export const DefaultRoutes = {
     PingRouter,

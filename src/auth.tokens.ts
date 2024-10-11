@@ -17,9 +17,18 @@ function co(tokenExpire: string) {
     }
 }
 
-const TOKENS_PREFIX = (process.env.TOKENS_PREFIX || "mi") + "_";
-const ACCESS_TOKEN = TOKENS_PREFIX+'access_token';
-const REFRESH_TOKEN = TOKENS_PREFIX+'refresh_token';
+const TOKENS_PREFIX = (() => {
+    let prefix = process.env.TOKENS_PREFIX as string;
+    if (prefix?.includes('-')) return prefix + '-';
+    if (!prefix) prefix = 'mi';
+    return prefix + '_';
+})();
+const [ACCESS_TOKEN, REFRESH_TOKEN] = (() => {
+    if (TOKENS_PREFIX.includes('-')) {
+        return [ 'access-token', 'refresh-token' ];
+    }
+    return  [ 'access_token', 'refresh_token' ];
+})();
 
 const AuthTokens = {
     async validUser(req: Request, res: Response | null): Promise<SelfUser> {
