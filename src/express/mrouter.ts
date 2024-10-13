@@ -1,5 +1,6 @@
 import express from "express";
 import { catchRouterError, HttpResponse } from "@klapeks/utils";
+import globalEnv from "../global.env";
 
 export type RequestCallback = (req: Request, res: Response) => any;
 export type Response = express.Response;
@@ -102,7 +103,8 @@ EchoRouter.all('/', (req, res) => {
         method: req.method,
         url: req.url,
         body: req.body,
-        ips: req.ips
+        ips: req.ips,
+        micro: globalEnv.serverOptions.microServer
     });
 });
 export const DefaultRoutes = {
