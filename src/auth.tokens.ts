@@ -1,25 +1,41 @@
 import axios from 'axios';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { HttpException, HttpStatus } from './express-utils/exceptions';
 import globalEnv from './global.env';
-import utils from './utils';
+import mstime from './utils/mstime';
+import { HttpException, HttpStatus } from '@klapeks/utils';
 
 export interface SelfUser {
     userId: number,
     globalRole: number
 }
+export interface TokensPair {
+    access_token: string,
+    refresh_token: string
+    /** @deprecated alias for access_token */
+    auth_token: string,
+    __comment?: any
+}
 
 function co(tokenExpire: string) {
     return {
         httpOnly: true,
-        expires: new Date(Date.now() + utils.mstime(tokenExpire))
+        expires: new Date(Date.now() + mstime(tokenExpire))
     }
 }
 
-const TOKENS_PREFIX = (process.env.TOKENS_PREFIX || "mi") + "_";
-const ACCESS_TOKEN = TOKENS_PREFIX+'access_token';
-const REFRESH_TOKEN = TOKENS_PREFIX+'refresh_token';
+const TOKENS_PREFIX = (() => {
+    let prefix = process.env.TOKENS_PREFIX as string;
+    if (prefix?.includes('-')) return prefix + '-';
+    if (!prefix) prefix = 'mi';
+    return prefix + '_';
+})();
+const [ACCESS_TOKEN, REFRESH_TOKEN] = (() => {
+    if (TOKENS_PREFIX.includes('-')) {
+        return [ 'access-token', 'refresh-token' ];
+    }
+    return  [ 'access_token', 'refresh_token' ];
+})();
 
 const AuthTokens = {
     async validUser(req: Request, res: Response | null): Promise<SelfUser> {
@@ -33,11 +49,12 @@ const AuthTokens = {
             throw new HttpException("Needed auth token in headers", HttpStatus.UNAUTHORIZED);
         }
         try {
-            const newTokens = (await axios.post(globalEnv.servers.auth_refresh, {
+            let refreshResponse = (await axios.post(globalEnv.servers.refresh, {
                 refresh_token: AuthTokens.reqRefreshToken(req)
             })).data;
-            AuthTokens.setResponseTokens(res, newTokens);
-            return AuthTokens.verifyAuth(newTokens.auth_token);
+            if ('tokens' in refreshResponse) refreshResponse = refreshResponse.tokens;
+            AuthTokens.setResponseTokens(res, refreshResponse);
+            return AuthTokens.verifyAuth(refreshResponse.access_token);
         } catch(e) {
             throw new HttpException("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
@@ -47,16 +64,16 @@ const AuthTokens = {
                 || req.headers['X-Control-Tokens'];
         return data !== 'client';
     },
-    setResponseTokens(res: Response, tokens: {
-        refresh_token: string, auth_token: string
-    }) {
+    setResponseTokens(res: Response, tokens: TokensPair) {
         res.cookie('s'+REFRESH_TOKEN, tokens.refresh_token, co(globalEnv.tokens.expire.refresh));
-        res.cookie('s'+ACCESS_TOKEN, tokens.auth_token, co(globalEnv.tokens.expire.auth));
+        res.cookie('s'+ACCESS_TOKEN, tokens.access_token, co(globalEnv.tokens.expire.auth));
     },
-    genTokens(user: SelfUser) {
+    genTokens(user: SelfUser): TokensPair {
+        const access_token = AuthTokens.genAuthToken(user);
         return {
-            auth_token: AuthTokens.genAuthToken(user),
-            refresh_token: AuthTokens.genRefreshToken(user.userId)
+            auth_token: access_token, access_token,
+            refresh_token: AuthTokens.genRefreshToken(user.userId),
+            __comment: "auth_token field is deprecated"
         }
     },
     reqAuthToken(req: Request) {
@@ -90,9 +107,9 @@ const AuthTokens = {
         } catch (e) {}
         throw new HttpException("Refresh token expired", HttpStatus.LOCKED);
     },
-    verifyAuth(auth_token: string): SelfUser {
-        if (auth_token) try {
-            const user = jwt.verify(auth_token, globalEnv.tokens.auth);
+    verifyAuth(access_token: string): SelfUser {
+        if (access_token) try {
+            const user = jwt.verify(access_token, globalEnv.tokens.auth);
             if (AuthTokens.isSelfUser(user)) return user;
         } catch (e) {}
         throw new HttpException("Auth token expired", HttpStatus.LOCKED);
