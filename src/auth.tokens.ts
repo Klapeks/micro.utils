@@ -42,7 +42,7 @@ const AuthTokens = {
             throw new HttpException("Needed auth token in headers", HttpStatus.UNAUTHORIZED);
         }
         try {
-            const newTokens = (await axios.post(globalEnv.servers.auth_refresh, {
+            const newTokens = (await axios.post(globalEnv.servers.refresh, {
                 refresh_token: AuthTokens.reqRefreshToken(req)
             })).data;
             AuthTokens.setResponseTokens(res, newTokens);

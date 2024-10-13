@@ -1,100 +1,115 @@
-import axios, { AxiosError, AxiosInstance } from "axios";
+import { DeepPartial, HttpException, HttpStatus, Logger, utils } from "@klapeks/utils";
 import express, { Express, Request, Router } from "express"
-import jwt from "jsonwebtoken";
-import { AddressInfo } from "net";
-import afterInit from "../express/after.init";
-import cookieParser from "../express/cookie.parser";
+import microOptions from "./micro.options";
 import globalEnv from "../global.env";
-import { HttpException, HttpStatus, logger, utils } from "@klapeks/utils";
+import cookieParser from "../express/cookie.parser";
+import afterInit from "../express/after.init";
 import { createMicroAxios, MicroAxios } from "./micro.axios";
+import jwt from "jsonwebtoken";
 import registerRoutes from "../express/router.register";
-// import cors from "cors";
 
-export interface ServerOptions {
-    id: string,
-    port: number,
-    /** Absolute path to global.env or paths */
-    env: string | {
-        folder: string,
-        /** @default env.IMPORT_ENV */
-        import?: string | string[],
-        /** @default env.PORT_YAML */
-        portYaml?: string,
-    },
+const logger = new Logger("MicroServer");
+
+export interface MicroServerOptions {
     /** @default env.APP */
-    app?: string,
-    links?: {
-        /** @default env.%APP%_DOMAIN */
-        domain?: string;
-        /** @default env.%APP%_MAIN */
-        main?: string;
-        /** @default env.%APP%_API */
-        api?: string
-        /** @default env.AUTH_REFRESH_URL */
-        refresh?: string
+    app: string,
+    /** @default env.MICRO_SERVER */
+    microServer: string,
+    /** @default env.PORT or from ports.yml file */
+    port: number,
+
+    env: {
+        /** @default env.%APP%_PATH */
+        folder: string | string[],
+        /** @default env.IMPORT_ENV */
+        import: string | string[],
+        /** @default ports.yml */
+        portYaml: string
     },
-    logging?: boolean,
-    disableUseJson?: boolean
+    links: {
+        /** @default env.%APP%_DOMAIN */
+        domain: string;
+        /** @default env.%APP%_MAIN */
+        main: string;
+        /** @default env.%APP%_API */
+        api: string
+        /** @default env.AUTH_REFRESH_URL */
+        refresh: string
+    },
+    express?: {
+        /** @default true */
+        useJSON?: boolean,
+        /** @default true */
+        useBodyParser?: boolean,
+        /** @default true */
+        trustProxy?: boolean,
+        /** @default undefined */
+        webStatic?: string
+    },
+    /** @default false */
+    debug?: boolean,
+}
+
+function isNotFalse(arg: boolean | undefined) {
+    return typeof arg === 'boolean' ? arg : true;
 }
 
 export default class MicroServer {
-    readonly id: string;
-    readonly port: number;
+
+    readonly options: MicroServerOptions;
     readonly app: Express;
     readonly api: MicroAxios;
+    constructor(options?: DeepPartial<MicroServerOptions>) {
+        this.options = microOptions.fix(options || {});
+        globalEnv.parseMicro(this.options);
 
-    private _loadingRoutes = 0;
-    private _started = false;
-
-    constructor(options?: ServerOptions) {
-        if (!options) {
-            const env = process.env as any;
-            if (!env.APP) throw `No APP found in .env (or try to use options param)`;
-            const app = (env.APP as string).toUpperCase();
-            options = {
-                id: env.MICRO_SERVER,
-                port: +env.PORT,
-                env: env[app+"_PATH"],
-                logging: env.DEBUG_MICRO_UTILS == 'true',
-                disableUseJson: env.DISABLE_USE_JSON == 'true'
-            }
-            if (!options.id) throw `No MICRO_SERVER found in .env (or try to use options param)`;
-            if (!options.port) throw `No PORT nor PORT_YAML found in .env (or try to use options param)`;
-            if (!options.env) throw `No ${app}_PATH found in .env (or try to use options param)`;
-        }
-        this.id = options.id;
-        this.port = options.port;
-        globalEnv.parseMicro(options);
-
+        // --- express ---
+        const expOptions = this.options.express || {};
         this.app = express();
         this.app.use(cookieParser);
-        if (!options.disableUseJson) {
+
+        if (expOptions.webStatic) {
+            this.app.use(express.static(expOptions.webStatic));
+            this.app.get('*', (req, res, next) => {
+                if (req.url.startsWith('/api')) return next();
+                if (!expOptions.webStatic) throw "No webStatic found";
+                return res.sendFile(expOptions.webStatic + '/index.html');
+            });
+        }
+        if (isNotFalse(expOptions.useJSON)) {
             this.app.use(express.json());
         }
-        // this.app.use(cors());
-
+        if (isNotFalse(expOptions.useBodyParser)) {
+            this.app.use(express.urlencoded({ extended: true }));
+        }
+        if (isNotFalse(expOptions.trustProxy)) {
+            this.app.set("trust proxy", true);
+        }
         const showErrors = (process.env.SHOW_DATABASE_ERRORS_IN_FRONEND?.toString())?.toLowerCase() === "true";
         this.app.on("event:after_init", afterInit(this.app, showErrors));
-        
-        let path = globalEnv.servers.api;
-        if (!path) throw "NO API"
-        if (path.endsWith('/')) {
-            path = path.substring(0, path.length-1);
+
+        // --- axios api ---
+        let apiPath = this.options.links.api;
+        if (apiPath.endsWith('/')) {
+            apiPath = apiPath.substring(0, apiPath.length-1);
         }
-        if (!path.endsWith('/api')) path += '/api';
-        this.api = createMicroAxios(path);
+        if (!apiPath.endsWith('/api')) apiPath += '/api';
+        this.api = createMicroAxios(apiPath);
+
         this.regenerateToken();
         setInterval(() => {
             this.regenerateToken();
         }, 10*60*60*1000) // 10 hours
     }
+
     private regenerateToken() {
-        this.api.defaults.headers['micro-server'] = jwt.sign(
-            { server: process.env.MICRO_SERVER_ID || this.id }, 
+        this.api.setHeader('micro-server', jwt.sign(
+            { server: this.options.microServer }, 
             globalEnv.tokens.server, { expiresIn: '12h' }
-        );
+        ));
     }
 
+    private _loadingRoutes = 0;
     async registerRoutes(prefix: string, routes: { [path: string]: any }) {
         if (this.isStarted) throw "Can't load routes when server started";
         this._loadingRoutes += 1;
@@ -107,6 +122,10 @@ export default class MicroServer {
         this._loadingRoutes -= 1;
     }
 
+    private _started = false;
+    get isStarted() {
+        return this._started;
+    }
     async start(beforeStart?: () => void | Promise<void>) {
         await utils.delay(200);
         while (this._loadingRoutes) {
@@ -117,16 +136,12 @@ export default class MicroServer {
         }
         this._started = true;
         this.app.emit("event:after_init");
-        const server = this.app.listen(this.port, async () => {
+        const server = this.app.listen(this.options.port, async () => {
             if (beforeStart) await beforeStart();
-            if (!this.port) logger.log("No default port was founded. Using random...");
-            logger.log("Server starter at port: " + (server.address() as AddressInfo).port);
+            if (!this.options.port) logger.log("No default port was founded. Using random...");
+            logger.log("Server starter at port: " + (server.address() as any).port);
         })
         return server;
-    }
-
-    get isStarted() {
-        return this._started;
     }
 
     static validMicroServer(header: any) {
@@ -139,9 +154,3 @@ export default class MicroServer {
         }
     }
 }
-
-
-process.on('uncaughtException', err => {
-    logger.error(`Uncaught Exception:`, err, 
-            'error type: ' + typeof err);
-});

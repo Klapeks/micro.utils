@@ -1,9 +1,11 @@
 import axios, { AxiosInstance } from "axios";
 import globalEnv from "../global.env";
 import { HttpException, logger } from "@klapeks/utils";
+import https from 'https';
 
 type _AI = AxiosInstance;
 export type MicroAxios = AxiosInstance & {
+    setHeader(key: string, value: any): void;
     getData<T = any>(...params: Parameters<_AI['get']>): Promise<T>,
     postData<T = any>(...params: Parameters<_AI['post']>): Promise<T>,
     patchData<T = any>(...params: Parameters<_AI['patch']>): Promise<T>,
@@ -11,19 +13,23 @@ export type MicroAxios = AxiosInstance & {
 }
 
 function is502err(err: any): any {
-    if (err?.response?.status === 502) {
-        err = err.request.path || err.config.url;
-        if (!err) throw new HttpException("Bad Gateway", 502);
-        throw new HttpException("Can't access " + err, 502);
-    }
+    // if (err?.response?.status === 502) {
+    //     err = err.request.path || err.config.url;
+    //     if (!err) throw new HttpException("Bad Gateway", 502);
+    //     throw new HttpException("Can't access " + err + " (Bad Gateway)", 502);
+    // }
     throw err;
 }
 export function createMicroAxios(uri?: string) {
     if (!uri) uri = globalEnv.servers.api;
     logger.debug("Creating big axios instance", uri);
+    
+    const httpsAgent = process.env.TLS_IGNORE_REJECT_UNAUTHORIZED == 'true'
+        ? new https.Agent({ rejectUnauthorized: false }) : undefined;
 
     const api = axios.create({
         baseURL: uri, 
+        httpsAgent,
         withCredentials: false,
         headers: {
             'Access-Control-Allow-Origin': '*', // * или ваш домен
@@ -34,6 +40,10 @@ export function createMicroAxios(uri?: string) {
         },
     }) as any as MicroAxios;
 
+    api.setHeader = async function(key: string, value: any) {
+        api.defaults.headers[key] = value;
+        logger.debug("Setting api header of", key);
+    }
     api.getData = async function (...params: Parameters<_AI['get']>) {
         return (await api.get(...params).catch(is502err)).data;
     };

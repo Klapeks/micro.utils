@@ -16,7 +16,7 @@
         "url": "https://github.com/Klapeks/micro.utils.git"
     },
     "dependencies": {
-        "@klapeks/utils": "^0.0.6",
+        "@klapeks/utils": "^0.0.7",
         "axios": "^1.2.0",
         "dotenv": "^16.0.3",
         "express": "^4.18.1",
