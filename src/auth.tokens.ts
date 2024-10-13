@@ -14,6 +14,7 @@ export interface TokensPair {
     refresh_token: string
     /** @deprecated alias for access_token */
     auth_token: string,
+    __comment?: any
 }
 
 function co(tokenExpire: string) {
@@ -71,7 +72,8 @@ const AuthTokens = {
         const access_token = AuthTokens.genAuthToken(user);
         return {
             auth_token: access_token, access_token,
-            refresh_token: AuthTokens.genRefreshToken(user.userId)
+            refresh_token: AuthTokens.genRefreshToken(user.userId),
+            __comment: "auth_token field is deprecated"
         }
     },
     reqAuthToken(req: Request) {
