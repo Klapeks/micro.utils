@@ -9,6 +9,12 @@ export interface SelfUser {
     userId: number,
     globalRole: number
 }
+export interface TokensPair {
+    access_token: string,
+    refresh_token: string
+    /** @deprecated alias for access_token */
+    auth_token: string,
+}
 
 function co(tokenExpire: string) {
     return {
@@ -42,11 +48,12 @@ const AuthTokens = {
             throw new HttpException("Needed auth token in headers", HttpStatus.UNAUTHORIZED);
         }
         try {
-            const newTokens = (await axios.post(globalEnv.servers.refresh, {
+            let refreshResponse = (await axios.post(globalEnv.servers.refresh, {
                 refresh_token: AuthTokens.reqRefreshToken(req)
             })).data;
-            AuthTokens.setResponseTokens(res, newTokens);
-            return AuthTokens.verifyAuth(newTokens.auth_token);
+            if ('tokens' in refreshResponse) refreshResponse = refreshResponse.tokens;
+            AuthTokens.setResponseTokens(res, refreshResponse);
+            return AuthTokens.verifyAuth(refreshResponse.access_token);
         } catch(e) {
             throw new HttpException("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
@@ -56,15 +63,14 @@ const AuthTokens = {
                 || req.headers['X-Control-Tokens'];
         return data !== 'client';
     },
-    setResponseTokens(res: Response, tokens: {
-        refresh_token: string, auth_token: string
-    }) {
+    setResponseTokens(res: Response, tokens: TokensPair) {
         res.cookie('s'+REFRESH_TOKEN, tokens.refresh_token, co(globalEnv.tokens.expire.refresh));
-        res.cookie('s'+ACCESS_TOKEN, tokens.auth_token, co(globalEnv.tokens.expire.auth));
+        res.cookie('s'+ACCESS_TOKEN, tokens.access_token, co(globalEnv.tokens.expire.auth));
     },
-    genTokens(user: SelfUser) {
+    genTokens(user: SelfUser): TokensPair {
+        const access_token = AuthTokens.genAuthToken(user);
         return {
-            auth_token: AuthTokens.genAuthToken(user),
+            auth_token: access_token, access_token,
             refresh_token: AuthTokens.genRefreshToken(user.userId)
         }
     },
@@ -99,9 +105,9 @@ const AuthTokens = {
         } catch (e) {}
         throw new HttpException("Refresh token expired", HttpStatus.LOCKED);
     },
-    verifyAuth(auth_token: string): SelfUser {
-        if (auth_token) try {
-            const user = jwt.verify(auth_token, globalEnv.tokens.auth);
+    verifyAuth(access_token: string): SelfUser {
+        if (access_token) try {
+            const user = jwt.verify(access_token, globalEnv.tokens.auth);
             if (AuthTokens.isSelfUser(user)) return user;
         } catch (e) {}
         throw new HttpException("Auth token expired", HttpStatus.LOCKED);

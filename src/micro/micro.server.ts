@@ -37,6 +37,7 @@ export interface MicroServerOptions {
         refresh: string
     },
     express?: {
+        useCors?: (req: any, res: any, next?: any) => any,
         /** @default true */
         useJSON?: boolean,
         /** @default true */
@@ -66,6 +67,9 @@ export default class MicroServer {
         // --- express ---
         const expOptions = this.options.express || {};
         this.app = express();
+        if (expOptions.useCors) {
+            this.app.use(expOptions.useCors);
+        }
         this.app.use(cookieParser);
 
         if (expOptions.webStatic) {
@@ -136,8 +140,8 @@ export default class MicroServer {
         }
         this._started = true;
         this.app.emit("event:after_init");
+        if (beforeStart) await beforeStart();
         const server = this.app.listen(this.options.port, async () => {
-            if (beforeStart) await beforeStart();
             if (!this.options.port) logger.log("No default port was founded. Using random...");
             logger.log("Server starter at port: " + (server.address() as any).port);
         })
@@ -145,6 +149,7 @@ export default class MicroServer {
     }
 
     static validMicroServer(header: any) {
+        if (process.env.IGNORE_MICRO_SERVICE_CHECK == 'true') return {};
         if ('headers' in header) header = header.headers;
         if (typeof header !== "string") header = header['micro-server'];
         try {
