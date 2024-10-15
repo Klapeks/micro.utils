@@ -3,7 +3,6 @@ import { MicroServerOptions } from "./micro.server";
 import fs from 'fs';
 import mPath from 'path';
 import dotenv from 'dotenv';
-import globalEnv from "../global.env";
 
 function dotenvConfig(path: string) {
     dotenv.config({ path });
@@ -13,12 +12,13 @@ function pickEnv(key: string, error?: string) {
     if (process.env[key]) return process.env[key];
     throw error || `No ${key} in .env found nor in micro-server options`;
 }
-function findEnvFolder(paths: string | string[]): string {
+function findEnvFolder(paths: string | (string | undefined)[]): string {
     if (!paths) return '';
     if (!Array.isArray(paths)) paths = [paths];
     if (!paths.length) return '';
     if (paths.length == 1 && !paths[0]) return '';
     for (let p of paths) {
+        if (!p) continue;
         if (fs.existsSync(p)) return p;
     }
     throw "No env path found";

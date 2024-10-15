@@ -20,7 +20,7 @@ export interface MicroServerOptions {
 
     env: {
         /** @default env.%APP%_PATH */
-        folder: string | string[],
+        folder: string | (string | undefined)[],
         /** @default env.IMPORT_ENV */
         import: string | string[],
         /** @default ports.yml */
