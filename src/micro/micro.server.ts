@@ -34,7 +34,7 @@ export interface MicroServerOptions {
         /** @default env.%APP%_API */
         api: string
         /** @default env.AUTH_REFRESH_URL */
-        refresh: string
+        authRefresh: string
     },
     express?: {
         useCors?: (req: any, res: any, next?: any) => any,
@@ -45,7 +45,9 @@ export interface MicroServerOptions {
         /** @default true */
         trustProxy?: boolean,
         /** @default undefined */
-        webStatic?: string
+        webStatic?: string,
+        /** @default Authorization */
+        authHeader?: string
     },
     /** @default false */
     debug?: boolean,

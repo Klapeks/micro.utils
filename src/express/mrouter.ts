@@ -42,7 +42,7 @@ export default class MRouter {
                     if (!a) throw "No response";
                     if (a.then) a = await a;
                 }
-                if (typeof a !== "object"){
+                if (typeof a !== "object") {
                     a = { message: a };
                 }
                 if (a instanceof HttpResponse) {
