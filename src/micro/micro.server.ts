@@ -23,8 +23,8 @@ export interface MicroServerOptions {
         folder: string | (string | undefined)[],
         /** @default env.IMPORT_ENV */
         import: string | string[],
-        /** @default ports.yml */
-        portYaml: string
+        /** @default ports.json */
+        portsJson?: string
     },
     links: {
         /** @default env.%APP%_DOMAIN */

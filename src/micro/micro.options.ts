@@ -40,14 +40,16 @@ const microOptions = {
             dotenvConfig(file);
         }
     },
-    loadPorts(folder: string, file: string) {
-        // TODO: load ports.yml
-        // logger.log("TODO: load ports.yml");
+    loadPorts(folder: string, file: string): { [ms: string]: number } | undefined {
+        file = mPath.join(folder, file);
+        if (!fs.existsSync(file)) return undefined;
+        logger.debug("Loading ports from ", file);
+        return JSON.parse(fs.readFileSync(file).toString());
     },
     fix(options: DeepPartial<MicroServerOptions>): MicroServerOptions {
         if (!options.app) options.app = pickEnv('APP');
         if (!options.microServer) options.microServer = pickEnv('MICRO_SERVER');
-        if (!options.port) options.port = Number(pickEnv('PORT'));
+        if (!options.port) options.port = Number(process.env.PORT);
         if (!options.debug) options.debug = process.env.DEBUG == 'true';
     
         const APP = options.app!.toUpperCase();
@@ -55,6 +57,7 @@ const microOptions = {
         // ---- env ----
         const oenv = options.env || {};
         if (!oenv.folder) oenv.folder = pickEnv(APP + "_PATH");
+        if (!oenv.portsJson) oenv.portsJson = process.env[APP + "_PORTS_INFO"] || 'ports.json';
         if (!oenv.import && process.env.IMPORT_ENV) {
             oenv.import = process.env.IMPORT_ENV;
             if (oenv.import.includes(',')) {
@@ -68,9 +71,6 @@ const microOptions = {
                 }
             }
         }
-        if (!oenv.portYaml) {
-            oenv.portYaml = process.env.PORT_YAML || 'ports.yml';
-        }
         options.env = oenv;
 
         // --- env loading --- 
@@ -78,7 +78,12 @@ const microOptions = {
         if (oenv.import?.length) {
             microOptions.loadEnvs(envFolder, oenv.import);
         }
-        microOptions.loadPorts(envFolder, oenv.portYaml);
+        if (!options.port && oenv.portsJson?.length) {
+            const ports = microOptions.loadPorts(envFolder, oenv.portsJson);
+            options.port = Number(ports?.[options.microServer!]);
+        }
+
+        if (!options.port) throw "No PORT in .env or in ports.json for " + options.microServer;
     
         // --- links ---
         const links = options.links || {};
