@@ -1,7 +1,7 @@
 {
     "name": "@klapeks/micro.utils",
     "description": "microservice utils",
-    "version": "1.7.4",
+    "version": "1.7.5",
     "type": "commonjs",
     "author": "Klapeks",
     "license": "ISC",
@@ -16,7 +16,7 @@
         "url": "https://github.com/Klapeks/micro.utils.git"
     },
     "dependencies": {
-        "@klapeks/utils": "^0.0.9",
+        "@klapeks/utils": "^0.0.10",
         "axios": "^1.2.0",
         "dotenv": "^16.0.3",
         "express": "^4.18.1",
