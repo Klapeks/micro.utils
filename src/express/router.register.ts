@@ -1,6 +1,7 @@
 import { IRoute, IRouter, Router } from "express";
 import MRouter from "./mrouter";
 import { Logger } from "@klapeks/utils";
+import { handleUncaughtException } from "./uncaught.exception";
 
 const logger = new Logger("Express");
 
@@ -48,5 +49,9 @@ export default async function registerRoutes(
     if (isRouterError) {
         logger.error(`Can't register ${isRouterError} routers`);
         process.exit(1);
+    }
+
+    if (process.env.DISABLE_UNCAUGHT_EXCEPTION_HANDLER != 'true') {
+        handleUncaughtException();
     }
 }
