@@ -25,7 +25,7 @@ export interface MicroServerOptions {
         import: string | string[],
         /** @default ports.json */
         portsJson?: string
-    },
+    } | null,
     links: {
         /** @default env.%APP%_DOMAIN */
         domain: string;

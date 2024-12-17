@@ -55,36 +55,37 @@ const microOptions = {
         const APP = options.app!.toUpperCase();
         
         // ---- env ----
-        const oenv = options.env || {};
-        if (!oenv.folder) oenv.folder = pickEnv(APP + "_PATH");
-        if (!oenv.portsJson) oenv.portsJson = process.env[APP + "_PORTS_INFO"] || 'ports.json';
-        if (!oenv.import && process.env.IMPORT_ENV) {
-            oenv.import = process.env.IMPORT_ENV;
-            if (oenv.import.includes(',')) {
-                oenv.import = oenv.import.split(',');
-            } else {
-                oenv.import = oenv.import.split(" ");
-            }
-            if (Array.isArray(oenv.import)) {
-                for (let i = 0; i < oenv.import.length; i++) {
-                    oenv.import[i] = oenv.import[i].trim();
+        if (options.env !== null) {
+            const oenv = options.env || {};
+            if (!oenv.folder) oenv.folder = pickEnv(APP + "_PATH");
+            if (!oenv.portsJson) oenv.portsJson = process.env[APP + "_PORTS_INFO"] || 'ports.json';
+            if (!oenv.import && process.env.IMPORT_ENV) {
+                oenv.import = process.env.IMPORT_ENV;
+                if (oenv.import.includes(',')) {
+                    oenv.import = oenv.import.split(',');
+                } else {
+                    oenv.import = oenv.import.split(" ");
+                }
+                if (Array.isArray(oenv.import)) {
+                    for (let i = 0; i < oenv.import.length; i++) {
+                        oenv.import[i] = oenv.import[i].trim();
+                    }
                 }
             }
-        }
-        options.env = oenv;
+            options.env = oenv;
 
-        // --- env loading --- 
-        const envFolder = findEnvFolder(oenv.folder!);
-        if (oenv.import?.length) {
-            microOptions.loadEnvs(envFolder, oenv.import);
+            // --- env loading --- 
+            const envFolder = findEnvFolder(oenv.folder!);
+            if (oenv.import?.length) {
+                microOptions.loadEnvs(envFolder, oenv.import);
+            }
+            if (!options.port && oenv.portsJson?.length) {
+                const ports = microOptions.loadPorts(envFolder, oenv.portsJson);
+                options.port = Number(ports?.[options.microServer!]);
+            }
         }
-        if (!options.port && oenv.portsJson?.length) {
-            const ports = microOptions.loadPorts(envFolder, oenv.portsJson);
-            options.port = Number(ports?.[options.microServer!]);
-        }
-
         if (!options.port) throw "No PORT in .env or in ports.json for " + options.microServer;
-    
+        
         // --- links ---
         const links = options.links || {};
         if (!links.domain) links.domain = pickEnv(APP + "_DOMAIN");
