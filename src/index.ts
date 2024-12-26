@@ -5,7 +5,7 @@ import MRouter, { DefaultRoutes } from "./express/mrouter";
 import globalEnv from "./global.env";
 import { MicroAxios } from "./micro/micro.axios";
 import MicroServer, { MicroServerOptions } from "./micro/micro.server";
-import mstime from "./utils/mstime";
+import timeUtils, { mstime } from "./utils/time.utils";
 export * from '@klapeks/utils';
 
 export {
@@ -23,5 +23,6 @@ export {
     TokensPair,
 
     globalEnv,
-    mstime
+    mstime,
+    timeUtils
 }

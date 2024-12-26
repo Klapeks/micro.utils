@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import globalEnv from '../global.env';
-import mstime from '../utils/mstime';
 import AuthSession, { SelfUser } from './auth.session';
 import { AuthTokensErrors } from './auth.errors';
+import { mstime } from '../utils/time.utils';
 
 export interface TokensPair {
     access_token: string,
@@ -83,7 +83,7 @@ const AuthTokens = {
         });
     },
     generateRefreshToken(userId: number): string {
-        return jwt.sign({userId}, globalEnv.tokens.refresh, {
+        return jwt.sign({ userId }, globalEnv.tokens.refresh, {
             expiresIn: globalEnv.tokens.expire.refresh
         });
     },
