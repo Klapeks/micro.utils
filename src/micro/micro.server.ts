@@ -152,7 +152,7 @@ export default class MicroServer {
 
     static validMicroServer(header: any) {
         if (process.env.IGNORE_MICRO_SERVICE_CHECK == 'true') return {};
-        if ('headers' in header) header = header.headers;
+        if (typeof header == 'object' && 'headers' in header) header = header.headers;
         if (typeof header !== "string") header = header['micro-server'];
         try {
             return jwt.verify(header, globalEnv.tokens.server) as object;
