@@ -1,7 +1,6 @@
 import { IRoute, IRouter, Router } from "express";
 import MRouter from "./mrouter";
-import { Logger } from "@klapeks/utils";
-import { handleUncaughtException } from "./uncaught.exception";
+import { handleUncaughtException, Logger } from "@klapeks/utils";
 
 const logger = new Logger("Express");
 
