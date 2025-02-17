@@ -1,7 +1,7 @@
 {
     "name": "@klapeks/micro.utils",
     "description": "microservice utils",
-    "version": "1.7.13",
+    "version": "1.7.14",
     "type": "commonjs",
     "author": "Klapeks",
     "license": "ISC",
