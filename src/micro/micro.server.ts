@@ -17,7 +17,7 @@ export interface MicroServerOptions {
     microServer: string,
     /** @default env.PORT or from ports.yml file */
     port: number,
-    /** @default 0.0.0.0 */
+    /** @default env.APP_HOST or 0.0.0.0 */
     host: string, 
 
     env: {

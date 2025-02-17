@@ -50,6 +50,7 @@ const microOptions = {
         if (!options.app) options.app = pickEnv('APP');
         if (!options.microServer) options.microServer = pickEnv('MICRO_SERVER');
         if (!options.port) options.port = Number(process.env.PORT);
+        if (!options.host) options.host = process.env.APP_HOST || '0.0.0.0';
         if (!options.debug) options.debug = process.env.DEBUG == 'true';
     
         const APP = options.app!.toUpperCase();
@@ -85,7 +86,6 @@ const microOptions = {
             }
         }
         if (!options.port) throw "No PORT in .env or in ports.json for " + options.microServer;
-        if (!options.host) options.host = '0.0.0.0';
         
         // --- links ---
         const links = options.links || {};
