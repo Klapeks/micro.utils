@@ -147,7 +147,11 @@ export default class MicroServer {
         if (beforeStart) await beforeStart();
         const server = this.app.listen(this.options.port, this.options.host, async () => {
             if (!this.options.port) logger.log("No default port was founded. Using random...");
-            logger.log("Server starter at port: " + (server.address() as any).port);
+            if (this.options.host != '0.0.0.0') {
+                logger.log("Server starter at: " + this.options.host + ':' + (server.address() as any).port);
+            } else {
+                logger.log("Server starter at port: " + (server.address() as any).port);
+            }
         })
         return server;
     }
