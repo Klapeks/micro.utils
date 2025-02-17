@@ -85,6 +85,7 @@ const microOptions = {
             }
         }
         if (!options.port) throw "No PORT in .env or in ports.json for " + options.microServer;
+        if (!options.host) options.host = '0.0.0.0';
         
         // --- links ---
         const links = options.links || {};

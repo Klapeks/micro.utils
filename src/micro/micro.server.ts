@@ -17,6 +17,8 @@ export interface MicroServerOptions {
     microServer: string,
     /** @default env.PORT or from ports.yml file */
     port: number,
+    /** @default 0.0.0.0 */
+    host: string, 
 
     env: {
         /** @default env.%APP%_PATH */
@@ -143,7 +145,7 @@ export default class MicroServer {
         this._started = true;
         this.app.emit("event:after_init");
         if (beforeStart) await beforeStart();
-        const server = this.app.listen(this.options.port, async () => {
+        const server = this.app.listen(this.options.port, this.options.host, async () => {
             if (!this.options.port) logger.log("No default port was founded. Using random...");
             logger.log("Server starter at port: " + (server.address() as any).port);
         })
