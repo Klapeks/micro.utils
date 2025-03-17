@@ -72,7 +72,7 @@ const AuthTokens = {
     generateTokens(user: SelfUser): TokensPair {
         const access_token = AuthTokens.generateAuthToken(user);
         return {
-            auth_token: access_token, access_token,
+            access_token, auth_token: access_token,
             refresh_token: AuthTokens.generateRefreshToken(user.userId),
             __comment: "auth_token field is deprecated"
         }
@@ -97,10 +97,10 @@ const AuthTokens = {
         } catch (e) {}
         throw AuthTokensErrors.REFRESH_TOKEN_EXPIRED;
     },
-    validAccessToken(access_token: string | undefined): SelfUser {
+    validAccessToken<T extends SelfUser>(access_token: string | undefined): T {
         if (access_token) try {
             const user = jwt.verify(access_token, globalEnv.tokens.auth);
-            if (AuthSession.isSelfUser(user)) return user;
+            if (AuthSession.isSelfUser<T>(user)) return user;
         } catch (e) {}
         throw AuthTokensErrors.ACCESS_TOKEN_EXPIRED;
     }

@@ -11,10 +11,10 @@ export interface SelfUser {
 }
 
 const AuthSession = {
-    async validUser(req: Request, res: Response | null): Promise<SelfUser> {
+    async validUser<T extends SelfUser>(req: Request, res: Response | null): Promise<T> {
         // valid access token
         try {
-            return AuthTokens.validAccessToken(AuthTokens.getAccessTokenFromRequest(req));
+            return AuthTokens.validAccessToken<T>(AuthTokens.getAccessTokenFromRequest(req));
         } catch (e) {
             if (AuthTokens.hasAccessTokenInHeaders(req)) {
                 throw AuthTokensErrors.ACCESS_TOKEN_EXPIRED;
@@ -28,12 +28,12 @@ const AuthSession = {
         try {
             const tokens = await AuthSession.requestRefresh(req);
             AuthTokens.setResponseTokens(res, tokens);
-            return AuthTokens.validAccessToken(tokens.access_token);
+            return AuthTokens.validAccessToken<T>(tokens.access_token);
         } catch(e) {
             throw AuthTokensErrors.UNAUTHORIZED;
         }
     },
-    isSelfUser(object: any): object is SelfUser {
+    isSelfUser<T extends SelfUser>(object: any): object is T {
         return Boolean(object?.userId);
     },
     async requestRefresh(req: Request): Promise<TokensPair> {
