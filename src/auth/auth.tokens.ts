@@ -28,9 +28,9 @@ const TOKENS_PREFIX = (() => {
 })();
 const [ACCESS_TOKEN, REFRESH_TOKEN] = (() => {
     if (TOKENS_PREFIX.includes('-')) {
-        return [ 'access-token', 'refresh-token' ];
+        return [ TOKENS_PREFIX + 'access-token', TOKENS_PREFIX + 'refresh-token' ];
     }
-    return  [ 'access_token', 'refresh_token' ];
+    return  [ TOKENS_PREFIX + 'access_token', TOKENS_PREFIX + 'refresh_token' ];
 })();
 const SERVER_PREFIX = ACCESS_TOKEN.includes('-') ? 's-' : 's_';
 
