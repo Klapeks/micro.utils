@@ -7,8 +7,12 @@ const logger = new Logger("Express");
 type R = Router | MRouter | Promise<any>;
 
 async function toRouter(router: R): Promise<Router> {
-    if ((router as any).then) router = (await router).default;
-    if ('default' in router) router = router.default as any;
+    if ((router as any).then) router = (await router);
+    if (router instanceof MRouter) return router.raw;
+    if (typeof router == 'object') {
+        if ('router' in router) router = router.router as any;
+        if ('default' in router) router = router.default as any;
+    }
     if (router instanceof MRouter) router = router.raw;
     return router;
 }

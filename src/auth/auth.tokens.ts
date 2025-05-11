@@ -35,6 +35,9 @@ const [ACCESS_TOKEN, REFRESH_TOKEN] = (() => {
 const SERVER_PREFIX = ACCESS_TOKEN.includes('-') ? 's-' : 's_';
 
 const AuthTokens = {
+    getAccessTokenKey() { return ACCESS_TOKEN },
+    getRefreshTokenKey() { return REFRESH_TOKEN },
+
     /** @deprecated moved to AuthSession.validUser(...) */
     get validUser() { return AuthSession.validUser },
     // --- request/response ---
