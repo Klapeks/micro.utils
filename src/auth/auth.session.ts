@@ -12,6 +12,7 @@ export interface SelfUser {
 
 const AuthSession = {
     async validUser<T extends SelfUser>(req: Request, res: Response | null): Promise<T> {
+        if (globalEnv.isAuthorizationDisabled) throw ["Authorization is disabled...", 500];
         // valid access token
         try {
             return AuthTokens.validAccessToken<T>(AuthTokens.getAccessTokenFromRequest(req));
@@ -37,6 +38,7 @@ const AuthSession = {
         return Boolean(object?.userId);
     },
     async requestRefresh(req: Request): Promise<TokensPair> {
+        if (globalEnv.isAuthorizationDisabled) throw ["Authorization is disabled...", 500];
         const result = await axios.post(globalEnv.servers.authRefresh, {
             refresh_token: AuthTokens.getRefreshTokenFromRequest(req)
         });

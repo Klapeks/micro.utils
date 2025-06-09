@@ -92,7 +92,13 @@ const microOptions = {
         if (!links.domain) links.domain = pickEnv(APP + "_DOMAIN");
         if (!links.main) links.main = pickEnv(APP + "_MAIN");
         if (!links.api) links.api = pickEnv(APP + "_API");
-        if (!links.authRefresh) links.authRefresh = pickEnv("AUTH_REFRESH_URL");
+        if (!links.authRefresh) {
+            if (options.express?.disableAuthorization) {
+                links.authRefresh = '';
+            } else {
+                links.authRefresh = pickEnv("AUTH_REFRESH_URL");
+            }
+        }
         options.links = links;
 
         return options as any;

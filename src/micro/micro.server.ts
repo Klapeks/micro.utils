@@ -46,10 +46,14 @@ export interface MicroServerOptions {
         useBodyParser?: boolean,
         /** @default true */
         trustProxy?: boolean,
+        
         /** @default undefined */
         webStatic?: string,
+
         /** @default Authorization */
-        authHeader?: string
+        authHeader?: string,
+        /** @default false */
+        disableAuthorization?: boolean
     },
     /** @default false */
     debug?: boolean,

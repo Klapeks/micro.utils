@@ -47,6 +47,7 @@ const AuthTokens = {
         return data !== 'client';
     },
     setResponseTokens(res: Response, tokens: TokensPair) {
+        if (globalEnv.isAuthorizationDisabled) return;
         res.cookie(SERVER_PREFIX + REFRESH_TOKEN, tokens.refresh_token, co(globalEnv.tokens.expire.refresh));
         res.cookie(SERVER_PREFIX + ACCESS_TOKEN, tokens.access_token, co(globalEnv.tokens.expire.auth));
     },
@@ -81,11 +82,17 @@ const AuthTokens = {
         }
     },
     generateAuthToken(user: SelfUser): string {
+        if (globalEnv.isAuthorizationDisabled) {
+            throw ["Authorization is disabled...", 500];
+        }
         return jwt.sign(user, globalEnv.tokens.auth, {
             expiresIn: globalEnv.tokens.expire.auth
         });
     },
     generateRefreshToken(userId: number): string {
+        if (globalEnv.isAuthorizationDisabled) {
+            throw ["Authorization is disabled...", 500];
+        }
         return jwt.sign({ userId }, globalEnv.tokens.refresh, {
             expiresIn: globalEnv.tokens.expire.refresh
         });

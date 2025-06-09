@@ -10,8 +10,8 @@ async function toRouter(router: R): Promise<Router> {
     if ((router as any).then) router = (await router);
     if (router instanceof MRouter) return router.raw;
     if (typeof router == 'object') {
-        if ('router' in router) router = router.router as any;
-        if ('default' in router) router = router.default as any;
+        if ('router' in router) router = (router as any).router;
+        if ('default' in router) router = (router as any).default;
     }
     if (router instanceof MRouter) router = router.raw;
     return router;

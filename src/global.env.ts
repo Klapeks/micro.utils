@@ -37,7 +37,11 @@ const globalEnv = {
         return globalEnv.serverOptions.links;  
     },
     utilsLogs: false,
-    isDebug: process.env.DEBUG == 'true'
+    isDebug: process.env.DEBUG == 'true',
+    
+    get isAuthorizationDisabled(): boolean {
+        return globalEnv.serverOptions.express?.disableAuthorization || false;
+    }
 }
 
 export default globalEnv;
