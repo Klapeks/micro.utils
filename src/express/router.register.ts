@@ -1,5 +1,5 @@
-import { IRoute, IRouter, Router } from "express";
-import MRouter from "./mrouter";
+import { IRouter, Router } from "express";
+import { MRouter } from "./mrouter";
 import { handleUncaughtException, Logger } from "@klapeks/utils";
 
 const logger = new Logger("Express");
@@ -17,7 +17,7 @@ async function toRouter(router: R): Promise<Router> {
     return router;
 }
 
-export default async function registerRoutes(
+export async function registerRoutes(
     app: IRouter, prefix: string | undefined, 
     routers: {[path: string]: R | R[]}
 ) {

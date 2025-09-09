@@ -10,7 +10,7 @@ export function mstime(time: string | number): number {
     return typeof time === "number" ? time : ms(time)
 }
 
-const timeUtils = {
+export const timeUtils = {
     mstime,
     expiredIn(time: string | number): Date {
         return new Date(Date.now() + mstime(time));
@@ -20,5 +20,3 @@ const timeUtils = {
         return time < Date.now();
     }
 }
-
-export default timeUtils;

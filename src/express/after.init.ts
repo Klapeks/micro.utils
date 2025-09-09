@@ -1,8 +1,8 @@
 import { catchRouterError } from "@klapeks/utils";
 import { IRouter } from "express";
-import globalEnv from "../global.env";
+import { globalEnv } from "../global.env";
 
-export default function afterInit(app: IRouter, showErrors: boolean) {
+export function afterInit(app: IRouter, showErrors: boolean) {
     return () => {
         app.use((err: any, req: any, res: any, next: any) => {
             if (!err) return;

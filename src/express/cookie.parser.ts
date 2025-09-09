@@ -1,6 +1,6 @@
 import { Request } from "express";
 
-export default function cookieParser(req: Request, res: any, next: any) {
+export function cookieParser(req: Request, res: any, next: any) {
     const cookies = req.headers.cookie;
     if (!cookies) { next(); return; }
     if (!req.cookies) req.cookies = {};

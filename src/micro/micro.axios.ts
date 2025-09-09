@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
-import globalEnv from "../global.env";
-import { HttpException, logger } from "@klapeks/utils";
+import { globalEnv } from "../global.env";
+import { logger } from "@klapeks/utils";
 import https from 'https';
 
 type _AI = AxiosInstance;

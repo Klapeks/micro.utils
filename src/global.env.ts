@@ -1,7 +1,7 @@
 import { logger } from "@klapeks/utils";
 import { MicroServerOptions } from "./micro/micro.server";
 
-const globalEnv = {
+export const globalEnv = {
     serverOptions: {} as MicroServerOptions,
     parseMicro(options: MicroServerOptions) {
         const env: any = process.env;
@@ -43,5 +43,3 @@ const globalEnv = {
         return globalEnv.serverOptions.express?.disableAuthorization || false;
     }
 }
-
-export default globalEnv;

@@ -1,5 +1,5 @@
 import express from 'express';
-import MRouter from './mrouter';
+import { MRouter } from './mrouter';
 import { ApiFunction } from '@klapeks/api-creation-tools';
 import { assertNever } from '@klapeks/utils';
 

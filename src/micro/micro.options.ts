@@ -24,7 +24,7 @@ function findEnvFolder(paths: string | (string | undefined)[]): string {
     throw "No env path found";
 }
 
-const microOptions = {
+export const microOptions = {
     loadEnvs(folder: string, envs: string | string[]) {
         if (!Array.isArray(envs)) envs = [envs];
         for (let file of envs) {
@@ -104,5 +104,3 @@ const microOptions = {
         return options as any;
     }
 }
-
-export default microOptions;

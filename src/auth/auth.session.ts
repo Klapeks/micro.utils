@@ -1,16 +1,15 @@
-import { HttpException, HttpStatus } from "@klapeks/utils";
-import AuthTokens, { TokensPair } from "./auth.tokens";
+import { AuthTokens, TokensPair } from "./auth.tokens";
 import { Request, Response } from 'express';
 import { AuthTokensErrors } from "./auth.errors";
 import axios from "axios";
-import globalEnv from "../global.env";
+import { globalEnv } from "../global.env";
 
 export interface SelfUser {
     userId: number,
     globalRole: number
 }
 
-const AuthSession = {
+export const AuthSession = {
     async validUser<T extends SelfUser>(req: Request, res: Response | null): Promise<T> {
         if (globalEnv.isAuthorizationDisabled) throw ["Authorization is disabled...", 500];
         // valid access token
@@ -46,5 +45,3 @@ const AuthSession = {
         return result.data;
     }
 }
-
-export default AuthSession;

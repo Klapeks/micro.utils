@@ -1,12 +1,10 @@
 import { DeepPartial, HttpException, HttpStatus, Logger, utils } from "@klapeks/utils";
 import express, { Express, Request, Router } from "express"
-import microOptions from "./micro.options";
-import globalEnv from "../global.env";
-import cookieParser from "../express/cookie.parser";
-import afterInit from "../express/after.init";
+import { microOptions } from "./micro.options";
 import { createMicroAxios, MicroAxios } from "./micro.axios";
 import jwt from "jsonwebtoken";
-import registerRoutes from "../express/router.register";
+import { globalEnv } from "../global.env";
+import { afterInit, cookieParser, registerRoutes } from "../express";
 
 const logger = new Logger("MicroServer");
 
@@ -63,7 +61,7 @@ function isNotFalse(arg: boolean | undefined) {
     return typeof arg === 'boolean' ? arg : true;
 }
 
-export default class MicroServer {
+export class MicroServer {
 
     readonly options: MicroServerOptions;
     readonly app: Express;

@@ -1,6 +1,6 @@
 import express from "express";
 import { catchRouterError, HttpResponse } from "@klapeks/utils";
-import globalEnv from "../global.env";
+import { globalEnv } from "../global.env";
 
 export type RequestCallback = (req: Request, res: Response) => any;
 export type Response = express.Response;
@@ -12,9 +12,9 @@ interface ConstructorArgs {
     converter?: (val: any, req: Request, res: Response) => any,
 }
 
-type ApiMethod = "get" | "post" | "all" | "delete" | "patch";
+export type ApiMethod = "get" | "post" | "all" | "delete" | "patch";
 
-export default class MRouter {
+export class MRouter {
     private router = express.Router();
     private cargs: ConstructorArgs | undefined;
 

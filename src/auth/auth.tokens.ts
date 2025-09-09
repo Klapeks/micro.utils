@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import globalEnv from '../global.env';
-import AuthSession, { SelfUser } from './auth.session';
 import { AuthTokensErrors } from './auth.errors';
 import { mstime } from '../utils/time.utils';
+import { AuthSession, SelfUser } from './auth.session';
+import { globalEnv } from '../global.env';
 
 export interface TokensPair {
     access_token: string,
@@ -34,7 +34,7 @@ const [ACCESS_TOKEN, REFRESH_TOKEN] = (() => {
 })();
 const SERVER_PREFIX = ACCESS_TOKEN.includes('-') ? 's-' : 's_';
 
-const AuthTokens = {
+export const AuthTokens = {
     getAccessTokenKey() { return ACCESS_TOKEN },
     getRefreshTokenKey() { return REFRESH_TOKEN },
 
@@ -69,7 +69,8 @@ const AuthTokens = {
         return auth.trim();
     },
     getRefreshTokenFromRequest(req: Request): string | undefined {
-        return req.body?.refresh_token || req.cookies?.[SERVER_PREFIX + REFRESH_TOKEN];
+        return req.body?.refresh_token || req.body?.refreshToken 
+            || req.cookies?.[SERVER_PREFIX + REFRESH_TOKEN];
     },
 
     // --- generating ---
@@ -115,5 +116,3 @@ const AuthTokens = {
         throw AuthTokensErrors.ACCESS_TOKEN_EXPIRED;
     }
 }
-
-export default AuthTokens;
