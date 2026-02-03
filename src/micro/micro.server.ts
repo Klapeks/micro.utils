@@ -162,10 +162,19 @@ export class MicroServer {
         if (process.env.IGNORE_MICRO_SERVICE_CHECK == 'true') return {};
         if (typeof header == 'object' && 'headers' in header) header = header.headers;
         if (typeof header !== "string") header = header['micro-server'];
+        if (typeof header === 'string') {
+            if (header.toLowerCase().startsWith("bearer")) {
+                header = header.substring(6).trim();
+            }
+        }
         try {
             return jwt.verify(header, globalEnv.tokens.server) as object;
         } catch (e) {
-            throw new HttpException("NOT_A_MICRO_SERVER", HttpStatus.METHOD_NOT_ALLOWED);
+            throw new HttpException({
+                error: "Not a micro-service",
+                status: HttpStatus.METHOD_NOT_ALLOWED,
+                errorCode: "NOT_A_MICRO_SERVER", 
+            });
         }
     }
 }

@@ -4,6 +4,7 @@ import { AuthTokensErrors } from './auth.errors';
 import { mstime } from '../utils/time.utils';
 import { AuthSession, SelfUser } from './auth.session';
 import { globalEnv } from '../global.env';
+import { getTokensKeys } from './other/token.key';
 
 export interface TokensPair {
     access_token: string,
@@ -20,23 +21,9 @@ function co(tokenExpire: string) {
     }
 }
 
-const TOKENS_PREFIX = (() => {
-    let prefix = process.env.TOKENS_PREFIX as string;
-    if (prefix?.includes('-')) return prefix + '-';
-    if (!prefix) prefix = 'mi';
-    return prefix + '_';
-})();
-const [ACCESS_TOKEN, REFRESH_TOKEN] = (() => {
-    if (TOKENS_PREFIX.includes('-')) {
-        return [ TOKENS_PREFIX + 'access-token', TOKENS_PREFIX + 'refresh-token' ];
-    }
-    return  [ TOKENS_PREFIX + 'access_token', TOKENS_PREFIX + 'refresh_token' ];
-})();
-const SERVER_PREFIX = ACCESS_TOKEN.includes('-') ? 's-' : 's_';
-
 export const AuthTokens = {
-    getAccessTokenKey() { return ACCESS_TOKEN },
-    getRefreshTokenKey() { return REFRESH_TOKEN },
+    getAccessTokenKey() { return getTokensKeys().access_token_key },
+    getRefreshTokenKey() { return getTokensKeys().refresh_token_key },
 
     /** @deprecated moved to AuthSession.validUser(...) */
     get validUser() { return AuthSession.validUser },
@@ -48,8 +35,18 @@ export const AuthTokens = {
     },
     setResponseTokens(res: Response, tokens: TokensPair) {
         if (globalEnv.isAuthorizationDisabled) return;
-        res.cookie(SERVER_PREFIX + REFRESH_TOKEN, tokens.refresh_token, co(globalEnv.tokens.expire.refresh));
-        res.cookie(SERVER_PREFIX + ACCESS_TOKEN, tokens.access_token, co(globalEnv.tokens.expire.auth));
+        res.cookie(
+            getTokensKeys().server_tokens_prefix 
+                + getTokensKeys().refresh_token_key, 
+            tokens.refresh_token, 
+            co(globalEnv.tokens.expire.refresh)
+        );
+        res.cookie(
+            getTokensKeys().server_tokens_prefix 
+                + getTokensKeys().access_token_key, 
+            tokens.access_token, 
+            co(globalEnv.tokens.expire.auth)
+        );
     },
 
     // --- getting from request ---
@@ -60,8 +57,11 @@ export const AuthTokens = {
         return !!req.headers?.[AuthTokens.accessTokenHeader()];
     },
     getAccessTokenFromRequest(req: Request): string | undefined {
-        let auth: string | undefined = req.headers?.[AuthTokens.accessTokenHeader()]
-            || req.cookies?.[SERVER_PREFIX + ACCESS_TOKEN];
+        let auth: string | undefined = req.headers?.[AuthTokens.accessTokenHeader()] as any;
+        if (!auth) {
+            const KEYS = getTokensKeys();
+            auth = req.cookies?.[KEYS.server_tokens_prefix + KEYS.access_token_key];
+        }
         if (!auth) return auth;
         if (auth.toLowerCase().startsWith('bearer')) {
             auth = auth.substring(6);
@@ -69,9 +69,19 @@ export const AuthTokens = {
         return auth.trim();
     },
     getRefreshTokenFromRequest(req: Request): string | undefined {
-        return req.body?.refresh_token || req.body?.refreshToken 
-            || req.cookies?.[SERVER_PREFIX + REFRESH_TOKEN];
+        let token: string | undefined = req.body?.refresh_token || req.body?.refreshToken;
+        if (!token) {
+            const KEYS = getTokensKeys();
+            token = req.cookies?.[KEYS.server_tokens_prefix + KEYS.access_token_key];
+        }
+        if (!token) return token;
+        if (token.toLowerCase().startsWith('bearer')) {
+            token = token.substring(6);
+        }
+        return token.trim();
     },
+
+
 
     // --- generating ---
     generateTokens(user: SelfUser): TokensPair {
@@ -98,6 +108,7 @@ export const AuthTokens = {
             expiresIn: globalEnv.tokens.expire.refresh
         });
     },
+    
     
     // --- validating ---
     validRefreshToken(refresh_token: string): number {
