@@ -1,4 +1,4 @@
-import { DeepPartial, logger } from "@klapeks/utils";
+import { DeepPartial, logger, utils } from "@klapeks/utils";
 import { MicroServerOptions } from "./micro.server";
 import fs from 'fs';
 import mPath from 'path';
@@ -52,13 +52,13 @@ export const microOptions = {
         if (!options.port) options.port = Number(process.env.PORT);
         if (!options.debug) options.debug = process.env.DEBUG == 'true';
     
-        const APP = options.app!.toUpperCase();
+        const APP_ENV_NAME = utils.replaceAll(options.app!.toUpperCase(), '-', '_');
         
         // ---- env ----
         if (options.env !== null) {
             const oenv = options.env || {};
-            if (!oenv.folder) oenv.folder = pickEnv(APP + "_PATH");
-            if (!oenv.portsJson) oenv.portsJson = process.env[APP + "_PORTS_INFO"] || 'ports.json';
+            if (!oenv.folder) oenv.folder = pickEnv(APP_ENV_NAME + "_PATH");
+            if (!oenv.portsJson) oenv.portsJson = process.env[APP_ENV_NAME + "_PORTS_INFO"] || 'ports.json';
             if (!oenv.import && process.env.IMPORT_ENV) {
                 oenv.import = process.env.IMPORT_ENV;
                 if (oenv.import.includes(',')) {
@@ -89,9 +89,9 @@ export const microOptions = {
         
         // --- links ---
         const links = options.links || {};
-        if (!links.domain) links.domain = pickEnv(APP + "_DOMAIN");
-        if (!links.main) links.main = pickEnv(APP + "_MAIN");
-        if (!links.api) links.api = pickEnv(APP + "_API");
+        if (!links.domain) links.domain = pickEnv(APP_ENV_NAME + "_DOMAIN");
+        if (!links.main) links.main = pickEnv(APP_ENV_NAME + "_MAIN");
+        if (!links.api) links.api = pickEnv(APP_ENV_NAME + "_API");
         if (!links.authRefresh) {
             if (options.express?.disableAuthorization) {
                 links.authRefresh = '';
