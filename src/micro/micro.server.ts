@@ -47,6 +47,7 @@ export interface MicroServerOptions {
         
         /** @default undefined */
         webStatic?: string,
+        beforeWebStatic?: (app: Express) => any,
 
         /** @default Authorization */
         authHeader?: string,
@@ -79,6 +80,7 @@ export class MicroServer {
         this.app.use(cookieParser);
 
         if (expOptions.webStatic) {
+            expOptions.beforeWebStatic?.(this.app);
             this.app.use(express.static(expOptions.webStatic));
             this.app.get('*', (req, res, next) => {
                 if (req.url.startsWith('/api')) return next();
