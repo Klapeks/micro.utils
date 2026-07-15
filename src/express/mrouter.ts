@@ -12,7 +12,7 @@ interface ConstructorArgs {
     converter?: (val: any, req: Request, res: Response) => any,
 }
 
-export type ApiMethod = "get" | "post" | "all" | "delete" | "patch";
+export type ApiMethod = "get" | "post" | "all" | "delete" | "patch" | "put";
 
 export class MRouter {
     private router = express.Router();
@@ -65,10 +65,16 @@ export class MRouter {
         this.router.patch(path, this.callback("patch", callback))
         if (withPost) this.post(path, callback);
     }
+    put(path: string, callback: RequestCallback, withPost = false) {
+        this.router.put(path, this.callback("put", callback))
+        if (withPost) this.post(path, callback);
+    }
     delete(path: string, callback: RequestCallback, withPost = false) {
         this.router.delete(path, this.callback("delete", callback))
         if (withPost) this.post(path, callback);
     }
+
+
     use(callback: ((req: express.Request, res: express.Response) => any) | MRouter) {
         if (callback instanceof MRouter) {
             this.router.use(callback.raw);
@@ -103,6 +109,7 @@ EchoRouter.all('/', (req, res) => {
         method: req.method,
         url: req.url,
         body: req.body,
+        query: req.query,
         ips: req.ips,
         micro: globalEnv.serverOptions.microServer
     });

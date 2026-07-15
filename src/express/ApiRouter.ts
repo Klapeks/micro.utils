@@ -57,6 +57,7 @@ export class ApiRouter<BaseURL extends string> extends MRouter {
             case "GET": this.get(url, callback as any); break;
             case "DELETE": this.delete(url, callback as any, true); break;
             case "PATCH": this.patch(url, callback as any, true); break;
+            case "PUT": this.put(url, callback as any, true); break;
             default: assertNever(method, "Unknown method: " + method);
         }
     }
