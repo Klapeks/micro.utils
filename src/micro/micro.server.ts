@@ -97,7 +97,8 @@ export class MicroServer {
         if (isNotFalse(expOptions.trustProxy)) {
             this.app.set("trust proxy", true);
         }
-        const showErrors = (process.env.SHOW_DATABASE_ERRORS_IN_FRONEND?.toString())?.toLowerCase() === "true";
+        const showErrors = (process.env.SHOW_DATABASE_ERRORS_IN_FRONEND?.toString())?.toLowerCase() === "true" // -_-
+            || (process.env.SHOW_DATABASE_ERRORS_IN_FRONTEND?.toString())?.toLowerCase() === "true";
         this.app.on("event:after_init", afterInit(this.app, showErrors));
 
         // --- axios api ---
